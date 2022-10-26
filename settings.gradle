@@ -1,0 +1,6 @@
+rootProject.name = 'yfway-base-ddd'
+include 'yfway-base-ddd-jpa'
+include 'yfway-base-ddd-test'
+include 'yfway-base-ddd-starter'
+include 'yfway-base-ddd-mp'
+

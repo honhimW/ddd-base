@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://10.37.1.132:4306/test?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT
+    username: root
+    password: testdb
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 2
+      idle-timeout: 30000
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+      naming:
+        implicit-strategy: com.yfway.base.ddd.jpa.strategy.YfImplicitStrategy
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+
+server:
+  http2:
+    enabled: true
+

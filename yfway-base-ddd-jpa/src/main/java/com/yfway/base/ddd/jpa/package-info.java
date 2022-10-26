@@ -1,0 +1,1 @@
+package com.yfway.base.ddd.jpa;
