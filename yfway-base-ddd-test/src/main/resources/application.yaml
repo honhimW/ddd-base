@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: ddd-test
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://10.37.1.132:4306/test?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT
@@ -17,8 +19,17 @@ spring:
       naming:
         implicit-strategy: com.yfway.base.ddd.jpa.strategy.YfImplicitStrategy
         physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+  cloud:
+    stream:
+      default-binder: kafka
+      kafka:
+        binder:
+          brokers: 10.37.1.132
+
 
 server:
   http2:
     enabled: true
-
+  port: 8080
+  compression:
+    enabled: true

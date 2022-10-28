@@ -6,6 +6,8 @@ import com.yfway.base.ddd.jpa.YfDDDJpa;
 import com.yfway.base.ddd.mp.YfDDDMp;
 import com.yfway.base.ddd.mp.domain.AbstractAR;
 import java.util.Collection;
+import java.util.Optional;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.apache.ibatis.plugin.Invocation;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
@@ -15,8 +17,6 @@ import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfig
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.config.JpaRepositoryConfigExtension;
 
 /**
  * @author hon_him
@@ -32,15 +32,12 @@ public class DDDAutoConfiguration {
         YfDDDJpa.class,
         JpaRepository.class
     })
-    static class JpaAggregateRoot {
+    static class JpaConfiguration {
 
         @Bean
-        @ConditionalOnClass(value = {
-            YfDDDJpa.class,
-            JpaRepository.class
-        })
-        public void jpa() {
-
+        @ConditionalOnMissingBean(AuditorAware.class)
+        public AuditorAware<?> auditorAware() {
+            return Optional::empty;
         }
 
     }

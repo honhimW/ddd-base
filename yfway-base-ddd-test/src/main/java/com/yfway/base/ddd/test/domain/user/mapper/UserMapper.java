@@ -14,6 +14,5 @@ public interface UserMapper extends TypeMapping {
 
     UserMapper MAPPER = Mappers.getMapper(UserMapper.class);
 
-    User copy(User user);
 
 }

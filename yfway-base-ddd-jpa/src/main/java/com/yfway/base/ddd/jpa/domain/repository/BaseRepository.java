@@ -1,6 +1,7 @@
 package com.yfway.base.ddd.jpa.domain.repository;
 
-import com.yfway.base.ddd.jpa.domain.AbstractJpaAR;
+import com.yfway.base.ddd.jpa.domain.AbstractAuditAR;
+import com.yfway.base.ddd.jpa.domain.AbstractLogicDeleteAR;
 import java.util.function.Consumer;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,18 +16,18 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Transactional
 @NoRepositoryBean
-public interface BaseRepository<T extends AbstractJpaAR<T, ID>, ID> extends JpaRepository<T, ID>, JpaSpecificationExecutor<T> {
+public interface BaseRepository<T extends AbstractLogicDeleteAR<T, ID>, ID> extends JpaRepository<T, ID>, JpaSpecificationExecutor<T> {
 
     default void logicDelete(ID id) {
-        findById(id).map(AbstractJpaAR::logicDelete).ifPresent(this::save);
+        findById(id).map(AbstractLogicDeleteAR::logicDelete).ifPresent(this::save);
     }
 
     default void logicDelete(T t) {
-        findBy(Example.of(t), FetchableFluentQuery::first).map(AbstractJpaAR::logicDelete).ifPresent(this::save);
+        findBy(Example.of(t), FetchableFluentQuery::first).map(AbstractLogicDeleteAR::logicDelete).ifPresent(this::save);
     }
 
     default void logicDeleteAll(Iterable<ID> ids) {
-        findAllById(ids).stream().map(AbstractJpaAR::logicDelete).forEach(this::save);
+        findAllById(ids).stream().map(AbstractLogicDeleteAR::logicDelete).forEach(this::save);
     }
 
     default T update(ID id, Consumer<T> updater) {

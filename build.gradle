@@ -9,6 +9,10 @@ group = 'com.yfway.base'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
+tasks.withType(JavaCompile) {
+    options.encoding('UTF-8')
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -41,8 +45,14 @@ subprojects {
             exclude group: 'io.springfox', module: 'springfox-boot-starter'
         }
         compileOnly 'org.projectlombok:lombok'
+        compileOnly('org.mapstruct:mapstruct:1.5.3.Final')
+        compileOnly('org.mapstruct:mapstruct-jdk8:1.5.3.Final')
+
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
         annotationProcessor 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+        annotationProcessor('org.mapstruct:mapstruct-processor:1.5.3.Final')
+        annotationProcessor('org.mapstruct:mapstruct-jdk8:1.5.3.Final')
     }
 
     dependencyManagement {

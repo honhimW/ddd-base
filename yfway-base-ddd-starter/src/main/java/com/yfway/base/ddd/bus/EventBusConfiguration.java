@@ -1,19 +1,20 @@
 package com.yfway.base.ddd.bus;
 
-import com.yfway.base.ddd.event.JpaRemoteEvent;
-import com.yfway.base.ddd.event.MpRemoteEvent;
+import com.yfway.base.ddd.event.RemoteDomainEvent;
 import com.yfway.base.ddd.jpa.YfDDDJpa;
-import com.yfway.base.ddd.jpa.domain.event.JpaBaseEvent;
 import com.yfway.base.ddd.mp.YfDDDMp;
+import com.yfway.base.ddd.mp.domain.event.DomainEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.bus.BusAutoConfiguration;
 import org.springframework.cloud.bus.event.RemoteApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.env.ConfigurableEnvironment;
 
 /**
  * @author hon_him
@@ -29,16 +30,12 @@ class EventBusConfiguration {
         YfDDDJpa.class
     })
     @Slf4j
-    static class JpaEventListenerWrapper {
+    static class JpaBusConfiguration {
 
-        @Autowired
-        private ApplicationEventPublisher publisher;
-
-        @EventListener
-        public void jpaEvent(JpaBaseEvent<?, ?> event) {
-            JpaRemoteEvent remoteEvent = new JpaRemoteEvent(event, "");
-            log.info("wrap jpa event: {}", event);
-            publisher.publishEvent(remoteEvent);
+        @Bean
+        @ConditionalOnMissingBean
+        DomainEventWrapper domainEventWrapper(ApplicationEventPublisher publisher, ConfigurableEnvironment environment) {
+            return new JpaDomainEventWrapper(publisher, environment);
         }
 
     }
@@ -49,14 +46,14 @@ class EventBusConfiguration {
         BusAutoConfiguration.class,
         YfDDDMp.class
     })
-    static class MpEventListenerWrapper {
+    static class MpBusConfiguration {
 
         @Autowired
         private ApplicationEventPublisher publisher;
 
         @EventListener
-        public void jpaEvent(Object event) {
-            MpRemoteEvent remoteEvent = new MpRemoteEvent(event, "");
+        public void mpEvent(DomainEvent event) {
+            RemoteDomainEvent remoteEvent = new RemoteDomainEvent(event, "", null);
             publisher.publishEvent(remoteEvent);
         }
 

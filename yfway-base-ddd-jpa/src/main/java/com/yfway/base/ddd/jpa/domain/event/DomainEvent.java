@@ -1,6 +1,5 @@
 package com.yfway.base.ddd.jpa.domain.event;
 
-import com.yfway.base.ddd.jpa.domain.AbstractJpaAR;
 import com.yfway.base.ddd.jpa.model.DaoAction;
 import java.io.Serializable;
 import javax.validation.constraints.NotNull;
@@ -15,18 +14,25 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = false)
-public abstract class JpaBaseEvent<T extends AbstractJpaAR<T, ID>, ID> implements Serializable {
+public class DomainEvent<T, ID> implements Serializable {
 
     @NotNull
     private final DaoAction action;
 
+    private ID id;
+
     private T entity;
 
-    public JpaBaseEvent(DaoAction action) {
+    public DomainEvent(DaoAction action) {
         this.action = action;
     }
 
-    public JpaBaseEvent<T, ID> entity(T entity) {
+    public DomainEvent<T, ID> id(ID id) {
+        this.setEntity(entity);
+        return this;
+    }
+
+    public DomainEvent<T, ID> entity(T entity) {
         this.setEntity(entity);
         return this;
     }

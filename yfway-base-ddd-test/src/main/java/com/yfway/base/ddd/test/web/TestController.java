@@ -4,7 +4,9 @@ import com.yfway.base.ddd.test.domain.user.User;
 import com.yfway.base.ddd.test.domain.user.repository.UserRepository;
 import com.yfway.base.ddd.test.domain.user.service.UserServiceImpl;
 import com.yfway.base.utils.YfJsonUtils;
+import javax.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,11 +40,14 @@ public class TestController {
         return YfJsonUtils.toJson(entity);
     }
 
+    @Autowired
+    private EntityManager entityManager;
+
     @RequestMapping("/ldelete")
+    @Transactional
     public String ldelete() {
         userRepository.logicDelete("1");
-        userService.delete("1");
-        return "delete";
+        return "logic_delete";
     }
 
     @RequestMapping("/delete")

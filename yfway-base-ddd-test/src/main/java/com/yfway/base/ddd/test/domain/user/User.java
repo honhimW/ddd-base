@@ -1,11 +1,10 @@
 package com.yfway.base.ddd.test.domain.user;
 
-import com.yfway.base.ddd.jpa.domain.AbstractCasAR;
-import com.yfway.base.ddd.jpa.domain.event.JpaBaseEvent;
+import com.yfway.base.ddd.jpa.domain.AbstractLogicDeleteAR;
+import com.yfway.base.ddd.jpa.domain.event.DomainEvent;
 import com.yfway.base.ddd.jpa.model.DaoAction;
 import com.yfway.base.ddd.test.domain.user.event.UserEvent;
-import com.yfway.base.ddd.test.domain.user.mapper.UserMapper;
-import java.util.Objects;
+import com.yfway.base.utils.YfJsonUtils;
 import java.util.function.Function;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,7 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.hibernate.Hibernate;
 import org.hibernate.annotations.Where;
 
 /**
@@ -42,8 +40,7 @@ import org.hibernate.annotations.Where;
 //        @Index(columnList = "phoneNumber")
     }
 )
-@Where(clause = "deleted = false")
-public class User extends AbstractCasAR<User, String> {
+public class User extends AbstractLogicDeleteAR<User, String> {
 
     @Id
     private String id;
@@ -56,8 +53,8 @@ public class User extends AbstractCasAR<User, String> {
     private String phoneNumber;
 
     @Override
-    protected Function<DaoAction, ? extends JpaBaseEvent<User, String>> eventBuilder() {
-        return action -> new UserEvent(action).entity(UserMapper.MAPPER.copy(this));
+    public Function<DaoAction, ? extends DomainEvent<User, String>> eventBuilder() {
+        return action -> new UserEvent(action).entity(YfJsonUtils.fromJson(YfJsonUtils.toJson(this), this.getClass()));
     }
 
 }

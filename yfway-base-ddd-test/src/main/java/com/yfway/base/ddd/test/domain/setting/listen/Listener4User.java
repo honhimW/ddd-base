@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -24,7 +26,8 @@ public class Listener4User {
     @Autowired
     private SettingRepository settingRepository;
 
-    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
+    @EventListener
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void userEvent(UserEvent event) {
         log.info("UserEvent: action: {}, entity: {}", event.getAction(), event.getEntity());
         switch (event.getAction()) {
@@ -39,7 +42,11 @@ public class Listener4User {
                 log.info(save.getVersion() + "");
             }
             case DELETE -> settingRepository.deleteAll(settingRepository.findAll(Example.of(new Setting().setId(new SettingPK(event.getEntity().getId(), null)))));
-            case LOGIC_DELETE -> settingRepository.logicDeleteAll(settingRepository.findAll(Example.of(new Setting().setId(new SettingPK(event.getEntity().getId(), null)))).stream().map(Setting::getId).toList());
+            case LOGIC_DELETE -> settingRepository.logicDeleteAll(settingRepository
+                .findAll(Example.of(new Setting().setId(new SettingPK(event.getEntity().getId(), null))))
+                .stream()
+                .map(Setting::getId)
+                .toList());
         }
     }
 

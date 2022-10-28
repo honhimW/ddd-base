@@ -1,10 +1,10 @@
 package com.yfway.base.ddd.jpa.domain.mapper;
 
-import com.yfway.base.ddd.jpa.util.DateTimeUtils;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Optional;
 import java.util.function.Function;
@@ -48,7 +48,7 @@ public interface TypeMapping {
     }
 
     default Instant localDateTime2Instant(LocalDateTime localDateTime) {
-        return nullSafety(localDateTime, ldt -> ldt.toInstant(DateTimeUtils.DEFAULT_ZONE_OFFSET));
+        return nullSafety(localDateTime, ldt -> ldt.toInstant(ZoneOffset.ofHours(8)));
     }
 
     default LocalDateTime instant2LocalDateTime(Instant instant) {

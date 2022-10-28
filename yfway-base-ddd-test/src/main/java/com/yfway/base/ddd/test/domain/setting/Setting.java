@@ -1,7 +1,7 @@
 package com.yfway.base.ddd.test.domain.setting;
 
-import com.yfway.base.ddd.jpa.domain.AbstractCasAR;
-import com.yfway.base.ddd.jpa.domain.event.JpaBaseEvent;
+import com.yfway.base.ddd.jpa.domain.AbstractLogicDeleteAR;
+import com.yfway.base.ddd.jpa.domain.event.DomainEvent;
 import com.yfway.base.ddd.jpa.model.DaoAction;
 import com.yfway.base.ddd.test.domain.setting.event.SettingDeleteEvent;
 import com.yfway.base.ddd.test.domain.setting.event.SettingInsertEvent;
@@ -37,7 +37,7 @@ import org.hibernate.annotations.Where;
     name = "user_setting"
 )
 @Where(clause = "deleted = false")
-public class Setting extends AbstractCasAR<Setting, SettingPK> {
+public class Setting extends AbstractLogicDeleteAR<Setting, SettingPK> {
 
     @EmbeddedId
     private SettingPK id;
@@ -50,7 +50,7 @@ public class Setting extends AbstractCasAR<Setting, SettingPK> {
     private String value;
 
     @Override
-    protected Function<DaoAction, ? extends JpaBaseEvent<Setting, SettingPK>> eventBuilder() {
+    public Function<DaoAction, ? extends DomainEvent<Setting, SettingPK>> eventBuilder() {
         return action -> {
             switch (action) {
                 case INSERT -> {
