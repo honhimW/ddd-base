@@ -26,46 +26,42 @@ public class CRUDListener {
     @PostPersist
     public void postPersist(Object entity) {
         if (entity instanceof DomainEntity<?, ?> domainEntity) {
-            Optional.of(domainEntity)
-                .map(DomainEntity::eventBuilder)
-                .map(daoActionFunction -> daoActionFunction.apply(DaoAction.INSERT))
-                .ifPresent(event -> publisher.publishEvent(event));
+            publish(domainEntity, DaoAction.INSERT);
         }
     }
 
     @PostLoad
     public void postLoad(Object entity) {
         if (entity instanceof SelectEvent && entity instanceof DomainEntity<?, ?> domainEntity) {
-            Optional.of(domainEntity)
-                .map(DomainEntity::eventBuilder)
-                .map(daoActionFunction -> daoActionFunction.apply(DaoAction.SELECT))
-                .ifPresent(event -> publisher.publishEvent(event));
+            publish(domainEntity, DaoAction.SELECT);
         }
     }
 
     @PostUpdate
     public void postUpdate(Object entity) {
-        if (entity instanceof LogicDelete logicDeleteEntity) {
-            if (logicDeleteEntity.isDeleted() && entity instanceof DomainEntity<?, ?> domainEntity) {
-                return;
-            }
-        }
         if (entity instanceof DomainEntity<?, ?> domainEntity) {
-            Optional.of(domainEntity)
-                .map(DomainEntity::eventBuilder)
-                .map(daoActionFunction -> daoActionFunction.apply(DaoAction.UPDATE))
-                .ifPresent(event -> publisher.publishEvent(event));
+            if (entity instanceof LogicDelete logicDeleteEntity) {
+                if (logicDeleteEntity.isDeleted()) {
+                    publish(domainEntity, DaoAction.LOGIC_DELETE);
+                    return;
+                }
+            }
+            publish(domainEntity, DaoAction.UPDATE);
         }
     }
 
     @PostRemove
     public void postRemove(Object entity) {
         if (entity instanceof DomainEntity<?, ?> domainEntity) {
-            Optional.of(domainEntity)
-                .map(DomainEntity::eventBuilder)
-                .map(daoActionFunction -> daoActionFunction.apply(DaoAction.DELETE))
-                .ifPresent(event -> publisher.publishEvent(event));
+            publish(domainEntity, DaoAction.DELETE);
         }
+    }
+
+    protected void publish(DomainEntity<?, ?> domainEntity, DaoAction action) {
+        Optional.of(domainEntity)
+            .map(DomainEntity::eventBuilder)
+            .map(daoActionFunction -> daoActionFunction.apply(action))
+            .ifPresent(event -> publisher.publishEvent(event));
     }
 
 }

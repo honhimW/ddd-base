@@ -26,9 +26,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @ToString(callSuper = true)
 @RequiredArgsConstructor
 @MappedSuperclass
-@EntityListeners({
-    LogicDeleteListener.class,
-})
 @Where(clause = "deleted = false")
 public abstract class AbstractLogicDeleteAR<A extends AbstractLogicDeleteAR<A, ID>, ID> extends AbstractAuditAR<A, ID> implements
     LogicDelete {
