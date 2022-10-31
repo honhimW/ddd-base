@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version "2.6.3"
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
     id 'java'
+    id 'java-library'
     id 'maven-publish'
 }
 
@@ -39,6 +40,7 @@ subprojects {
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
     apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
     repositories {
@@ -85,34 +87,32 @@ subprojects {
         classifier 'sources'
     }
 
-    println findProperty('MAVEN_USER')
-
-    publishing {
-
-        publications {
-            pub(MavenPublication) {
-                groupId = this.group
-                artifactId = project.name
-                version = this.version
-                from components.java
-                artifact sourcesJar
-            }
-        }
-
-        repositories {
-            maven {
-                name 'yfway-nexus'
-                allowInsecureProtocol true
-                credentials {
-                    username findProperty('MAVEN_USERNAME')
-                    password findProperty('MAVEN_PASSWORD')
-                }
-                url = this.version.endsWith('SNAPSHOT')
-                        ? 'http://nexus.yfyun.gtland/yfang/repository/maven-snapshots/'
-                        : 'http://nexus.yfyun.gtland/yfang/repository/maven-releases/'
-            }
-        }
-    }
+//    publishing {
+//
+//        publications {
+//            pub(MavenPublication) {
+//                groupId = this.group
+//                artifactId = project.name
+//                version = this.version
+//                from components.java
+//                artifact sourcesJar
+//            }
+//        }
+//
+//        repositories {
+//            maven {
+//                name 'yfway-nexus'
+//                allowInsecureProtocol true
+//                credentials {
+//                    username findProperty('MAVEN_USERNAME')
+//                    password findProperty('MAVEN_PASSWORD')
+//                }
+//                url = this.version.endsWith('SNAPSHOT')
+//                        ? 'http://nexus.yfyun.gtland/yfang/repository/maven-snapshots/'
+//                        : 'http://nexus.yfyun.gtland/yfang/repository/maven-releases/'
+//            }
+//        }
+//    }
 
     tasks.named('test') {
         useJUnitPlatform()

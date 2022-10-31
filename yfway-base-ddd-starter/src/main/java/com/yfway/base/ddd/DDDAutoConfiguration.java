@@ -27,7 +27,9 @@ import org.springframework.context.annotation.Configuration;
 public class DDDAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
-    @AutoConfigureAfter(JpaRepositoriesAutoConfiguration.class)
+    @AutoConfigureAfter(value = {
+        JpaRepositoriesAutoConfiguration.class,
+    })
     @ConditionalOnClass(value = {
         YfDDDJpa.class,
         JpaRepository.class

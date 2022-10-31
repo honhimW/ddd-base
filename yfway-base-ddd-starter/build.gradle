@@ -13,3 +13,42 @@ dependencies {
     compileOnly('com.baomidou:mybatis-plus:3.5.2')
     compileOnly('org.springframework.cloud:spring-cloud-bus')
 }
+
+publishing {
+
+    publications {
+        library(MavenPublication) {
+            groupId = parent.group
+            artifactId = project.name
+            version = parent.version
+            pom {
+                packaging 'jar'
+            }
+            from components.java
+            artifact sourcesJar
+        }
+    }
+
+    repositories {
+        maven {
+            name 'build-dir'
+            url = uri("${buildDir}/publishing-repository")
+        }
+        maven {
+            name 'yfway-nexus'
+            allowInsecureProtocol true
+            credentials {
+                username findProperty('MAVEN_USERNAME')
+                password findProperty('MAVEN_PASSWORD')
+            }
+            url = parent.version.endsWith('SNAPSHOT')
+                    ? 'http://nexus.yfyun.gtland/yfang/repository/maven-snapshots/'
+                    : 'http://nexus.yfyun.gtland/yfang/repository/maven-releases/'
+        }
+    }
+}
+
+jar {
+    enabled(true)
+    archiveClassifier = ''
+}
