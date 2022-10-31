@@ -25,10 +25,21 @@ ext {
     set('springBootVersion', "2.6.3")
 }
 
+repositories {
+    maven {
+        allowInsecureProtocol true
+        name 'yfway-nexus'
+        url 'http://nexus.yfyun.gtland/yfang/repository/maven-public/'
+    }
+    mavenLocal()
+    mavenCentral()
+}
+
 subprojects {
-    apply plugin:'org.springframework.boot'
-    apply plugin:'io.spring.dependency-management'
-    apply plugin:'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
 
     repositories {
         maven {
@@ -61,7 +72,49 @@ subprojects {
         }
     }
 
+    bootJar {
+        enabled(false)
+    }
+
+    jar {
+        enabled(true)
+    }
+
+    publishing {
+
+        publications {
+            pub(MavenPublication) {
+                groupId = project.group
+                artifactId = project.name
+                version = this.version
+                from components.java
+            }
+        }
+
+        repositories {
+            maven {
+                name 'yfway-nexus'
+                allowInsecureProtocol true
+                credentials {
+                    username 'whq'
+                    password '3OMfk71q'
+                }
+                url = version.endsWith('SNAPSHOT')
+                        ? 'http://nexus.yfyun.gtland/yfang/repository/maven-snapshots/'
+                        : 'http://nexus.yfyun.gtland/yfang/repository/maven-releases/'
+            }
+        }
+    }
+
     tasks.named('test') {
         useJUnitPlatform()
     }
+}
+
+bootJar {
+    enabled(false)
+}
+
+jar {
+    enabled(true)
 }
