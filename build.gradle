@@ -80,14 +80,22 @@ subprojects {
         enabled(true)
     }
 
+    task sourcesJar(type: Jar) {
+        from sourceSets.main.allJava
+        classifier 'sources'
+    }
+
+    println findProperty('MAVEN_USER')
+
     publishing {
 
         publications {
             pub(MavenPublication) {
-                groupId = project.group
+                groupId = this.group
                 artifactId = project.name
                 version = this.version
                 from components.java
+                artifact sourcesJar
             }
         }
 
@@ -96,10 +104,10 @@ subprojects {
                 name 'yfway-nexus'
                 allowInsecureProtocol true
                 credentials {
-                    username 'whq'
-                    password '3OMfk71q'
+                    username findProperty('MAVEN_USERNAME')
+                    password findProperty('MAVEN_PASSWORD')
                 }
-                url = version.endsWith('SNAPSHOT')
+                url = this.version.endsWith('SNAPSHOT')
                         ? 'http://nexus.yfyun.gtland/yfang/repository/maven-snapshots/'
                         : 'http://nexus.yfyun.gtland/yfang/repository/maven-releases/'
             }
