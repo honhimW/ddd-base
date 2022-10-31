@@ -4,7 +4,6 @@ import com.yfway.base.ddd.event.RemoteDomainEvent;
 import com.yfway.base.ddd.jpa.domain.event.DomainEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -14,7 +13,7 @@ import org.springframework.core.env.ConfigurableEnvironment;
  * @since 2022-10-28
  */
 @Slf4j
-public class JpaDomainEventWrapper implements DomainEventWrapper {
+public class JpaRemoteDomainEventWrapper implements RemoteDomainEventWrapper {
 
     public static final String BUS_ID = "spring.cloud.bus.id";
 
@@ -24,7 +23,7 @@ public class JpaDomainEventWrapper implements DomainEventWrapper {
 
     private final ConfigurableEnvironment environment;
 
-    public JpaDomainEventWrapper(ApplicationEventPublisher publisher, ConfigurableEnvironment environment) {
+    public JpaRemoteDomainEventWrapper(ApplicationEventPublisher publisher, ConfigurableEnvironment environment) {
         this.publisher = publisher;
         this.environment = environment;
     }
@@ -34,7 +33,6 @@ public class JpaDomainEventWrapper implements DomainEventWrapper {
         if (log.isDebugEnabled()) {
             log.debug("wrap jpa event: {}, {}", domainEvent.getAction(), domainEvent.getEntity());
         }
-        log.info("wrap jpa event: {}, {}", domainEvent.getAction(), domainEvent.getEntity());
         String busId = environment.getProperty(BUS_ID);
         if (StringUtils.equals(busId, "application")) {
             busId = environment.getProperty(APPLICATION_NAME);

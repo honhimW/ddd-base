@@ -5,6 +5,6 @@ package com.yfway.base.ddd.bus;
  * @since 2022-10-28
  */
 
-public interface DomainEventWrapper {
+public interface RemoteDomainEventWrapper {
 
 }

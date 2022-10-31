@@ -1,11 +1,8 @@
 package com.yfway.base.ddd.jpa.domain;
 
 import com.yfway.base.ddd.jpa.domain.ext.LogicDelete;
-import com.yfway.base.ddd.jpa.domain.listener.LogicDeleteListener;
 import java.util.Objects;
 import javax.persistence.Column;
-import javax.persistence.EntityListeners;
-import javax.persistence.ExcludeSuperclassListeners;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.Version;
@@ -15,7 +12,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.Where;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
  * @author hon_him

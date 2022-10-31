@@ -34,8 +34,8 @@ class EventBusConfiguration {
 
         @Bean
         @ConditionalOnMissingBean
-        DomainEventWrapper domainEventWrapper(ApplicationEventPublisher publisher, ConfigurableEnvironment environment) {
-            return new JpaDomainEventWrapper(publisher, environment);
+        RemoteDomainEventWrapper domainEventWrapper(ApplicationEventPublisher publisher, ConfigurableEnvironment environment) {
+            return new JpaRemoteDomainEventWrapper(publisher, environment);
         }
 
     }
