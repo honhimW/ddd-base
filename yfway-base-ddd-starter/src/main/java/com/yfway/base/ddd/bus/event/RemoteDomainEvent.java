@@ -1,4 +1,4 @@
-package com.yfway.base.ddd.event;
+package com.yfway.base.ddd.bus.event;
 
 import org.springframework.cloud.bus.event.RemoteApplicationEvent;
 

@@ -7,6 +7,7 @@ import com.yfway.base.ddd.test.domain.user.event.UserEvent;
 import com.yfway.base.utils.YfJsonUtils;
 import java.util.function.Function;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -51,6 +52,10 @@ public class User extends AbstractLogicDeleteAR<User, String> {
     @Column(nullable = false)
     @NotNull
     private String phoneNumber;
+
+    @Embedded
+    @NotNull
+    private Password password;
 
     @Override
     public Function<DaoAction, ? extends DomainEvent<User, String>> eventBuilder() {

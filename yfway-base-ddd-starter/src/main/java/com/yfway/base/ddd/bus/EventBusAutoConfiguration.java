@@ -1,14 +1,16 @@
 package com.yfway.base.ddd.bus;
 
-import com.yfway.base.ddd.event.RemoteDomainEvent;
+import com.yfway.base.ddd.bus.event.RemoteDomainEvent;
 import com.yfway.base.ddd.jpa.YfDDDJpa;
 import com.yfway.base.ddd.mp.YfDDDMp;
 import com.yfway.base.ddd.mp.domain.event.DomainEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.bus.BusAutoConfiguration;
+import org.springframework.cloud.bus.ConditionalOnBusEnabled;
 import org.springframework.cloud.bus.event.RemoteApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +23,10 @@ import org.springframework.core.env.ConfigurableEnvironment;
  * @since 2022-10-26
  */
 @Configuration(proxyBeanMethods = false)
-class EventBusConfiguration {
+@ConditionalOnBusEnabled
+@ConditionalOnClass(RemoteApplicationEvent.class)
+@AutoConfigureAfter(BusAutoConfiguration.class)
+public class EventBusAutoConfiguration {
 
     @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(value = {
@@ -33,7 +38,7 @@ class EventBusConfiguration {
     static class JpaBusConfiguration {
 
         @Bean
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(RemoteDomainEventWrapper.class)
         RemoteDomainEventWrapper domainEventWrapper(ApplicationEventPublisher publisher, ConfigurableEnvironment environment) {
             return new JpaRemoteDomainEventWrapper(publisher, environment);
         }

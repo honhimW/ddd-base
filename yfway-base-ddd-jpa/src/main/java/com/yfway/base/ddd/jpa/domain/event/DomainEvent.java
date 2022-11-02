@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
+ * {@link ID} 表示的是一个标识, 不一定是某个实体的id
+ * {@link T} 表示的是一个结构, 不一定是某个实体对象
  * @author hon_him
  * @since 2022-10-21
  */

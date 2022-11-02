@@ -1,4 +1,4 @@
-package com.yfway.base.ddd;
+package com.yfway.base.ddd.data;
 
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
@@ -7,29 +7,25 @@ import com.yfway.base.ddd.mp.YfDDDMp;
 import com.yfway.base.ddd.mp.domain.AbstractAR;
 import java.util.Collection;
 import java.util.Optional;
-import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.jpa.repository.JpaRepository;
+import javax.sql.DataSource;
 import org.apache.ibatis.plugin.Invocation;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
  * @author hon_him
- * @since 2022-10-25
+ * @since 2022-11-01
  */
-@Configuration(proxyBeanMethods = false)
-@ComponentScan(basePackages = "com.yfway.base.ddd")
-public class DDDAutoConfiguration {
+
+abstract class DataOperationConfiguration {
 
     @Configuration(proxyBeanMethods = false)
-    @AutoConfigureAfter(value = {
-        JpaRepositoriesAutoConfiguration.class,
-    })
+    @ConditionalOnBean(DataSource.class)
     @ConditionalOnClass(value = {
         YfDDDJpa.class,
         JpaRepository.class
@@ -38,13 +34,14 @@ public class DDDAutoConfiguration {
 
         @Bean
         @ConditionalOnMissingBean(AuditorAware.class)
-        public AuditorAware<?> auditorAware() {
+        AuditorAware<?> auditorAware() {
             return Optional::empty;
         }
 
     }
 
     @Configuration(proxyBeanMethods = false)
+    @ConditionalOnBean(DataSource.class)
     @ConditionalOnClass(value = {
         YfDDDMp.class,
         MybatisConfiguration.class
@@ -55,7 +52,7 @@ public class DDDAutoConfiguration {
             YfDDDMp.class,
             MybatisConfiguration.class
         })
-        public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor mybatisPlusInterceptor() {
             return new MybatisPlusInterceptor() {
                 @Override
                 public Object intercept(Invocation invocation) throws Throwable {

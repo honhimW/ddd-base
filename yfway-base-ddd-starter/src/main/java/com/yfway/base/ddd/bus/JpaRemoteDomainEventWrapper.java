@@ -1,6 +1,6 @@
 package com.yfway.base.ddd.bus;
 
-import com.yfway.base.ddd.event.RemoteDomainEvent;
+import com.yfway.base.ddd.bus.event.RemoteDomainEvent;
 import com.yfway.base.ddd.jpa.domain.event.DomainEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

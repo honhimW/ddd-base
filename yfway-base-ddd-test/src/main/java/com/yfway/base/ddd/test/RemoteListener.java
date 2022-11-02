@@ -1,11 +1,10 @@
 package com.yfway.base.ddd.test;
 
-import com.yfway.base.ddd.event.RemoteDomainEvent;
+import com.yfway.base.ddd.bus.event.RemoteDomainEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.bus.jackson.RemoteApplicationEventScan;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 /**

@@ -1,2 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.yfway.base.ddd.DDDAutoConfiguration
+  com.yfway.base.ddd.data.DDDAutoConfiguration,\
+  com.yfway.base.ddd.bus.EventBusAutoConfiguration
