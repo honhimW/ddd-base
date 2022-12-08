@@ -1,8 +1,6 @@
 package com.yfway.base.ddd.jpa.domain.repository;
 
-import com.yfway.base.ddd.jpa.domain.AbstractAuditAR;
 import com.yfway.base.ddd.jpa.domain.AbstractLogicDeleteAR;
-import java.util.function.Consumer;
 import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -28,10 +26,6 @@ public interface BaseRepository<T extends AbstractLogicDeleteAR<T, ID>, ID> exte
 
     default void logicDeleteAll(Iterable<ID> ids) {
         findAllById(ids).stream().map(AbstractLogicDeleteAR::logicDelete).forEach(this::save);
-    }
-
-    default T update(ID id, Consumer<T> updater) {
-        return findById(id).map(t -> t.update(updater)).map(this::save).orElseThrow();
     }
 
 }

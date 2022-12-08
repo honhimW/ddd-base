@@ -30,7 +30,7 @@ public class DomainEvent<T, ID> implements Serializable {
     }
 
     public DomainEvent<T, ID> id(ID id) {
-        this.setEntity(entity);
+        this.setId(id);
         return this;
     }
 
