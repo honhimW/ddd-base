@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Transactional
 @NoRepositoryBean
-public interface BaseRepository<T extends AbstractLogicDeleteAR<T, ID>, ID> extends JpaRepository<T, ID>, JpaSpecificationExecutor<T> {
+public interface BaseRepository<T extends AbstractLogicDeleteAR<T, ID>, ID> extends SimpleRepository<T, ID> {
 
     default void logicDelete(ID id) {
         findById(id).map(AbstractLogicDeleteAR::logicDelete).ifPresent(this::save);
