@@ -30,7 +30,7 @@ public abstract class AbstractLogicDeleteAR<A extends AbstractLogicDeleteAR<A, I
     @Column(
         name = "version"
     )
-    private Integer version;
+    private Long version;
 
     @Column(
         name = "deleted",
@@ -47,7 +47,7 @@ public abstract class AbstractLogicDeleteAR<A extends AbstractLogicDeleteAR<A, I
     @PrePersist
     protected void prePersist() {
         this.setDeleted(false);
-        this.setVersion(1);
+        this.setVersion(1L);
     }
 
     public A logicDelete() {

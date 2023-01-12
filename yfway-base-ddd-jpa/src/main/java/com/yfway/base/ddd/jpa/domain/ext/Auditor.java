@@ -4,7 +4,8 @@ import com.yfway.base.ddd.jpa.model.Value;
 import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.Comment;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -16,22 +17,24 @@ import org.springframework.data.annotation.LastModifiedDate;
  * @since 2022-11-01
  */
 @Embeddable
+@Getter
+@Setter
 public class Auditor implements Value<Auditor> {
 
     @Column(
         name = "created_at",
-        updatable = false
+        updatable = false,
+        nullable = false
     )
     @Comment("创建时间")
-    @NotNull
     @CreatedDate
     private Instant createdAt;
 
     @Column(
-        name = "updated_at"
+        name = "updated_at",
+        nullable = false
     )
     @Comment("更新时间")
-    @NotNull
     @LastModifiedDate
     private Instant updatedAt;
 

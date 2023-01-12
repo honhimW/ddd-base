@@ -1,6 +1,8 @@
 package com.yfway.base.ddd.jpa.util;
 
-import com.yfway.base.ddd.jpa.util.IPageRequest.OrderColumn;
+import com.yfway.base.ddd.common.IPageRequest;
+import com.yfway.base.ddd.common.PageInfoVO;
+import com.yfway.base.ddd.common.IPageRequest.OrderColumn;
 import java.util.List;
 import java.util.function.Function;
 import org.apache.commons.collections4.CollectionUtils;

@@ -1,6 +1,7 @@
 package com.yfway.base.ddd.jpa.domain;
 
 import com.yfway.base.ddd.jpa.domain.ext.Auditor;
+import com.yfway.base.ddd.jpa.domain.listener.AuditingExtListener;
 import com.yfway.base.ddd.jpa.model.DaoAction;
 import com.yfway.base.ddd.jpa.util.ValidatorUtils;
 import java.time.Instant;
@@ -36,30 +37,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @ToString
 @RequiredArgsConstructor
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class})
 public abstract class AbstractAuditAR<A extends AbstractAuditAR<A, ID>, ID> extends AbstractAR<A, ID> implements
     DomainEntity<A, ID> {
 
     @Embedded
-    private Auditor auditor;
-
-    public void validate() {
-        ValidatorUtils.validate(this);
-    }
-
-
-    /**
-     * 默认不开启读事件
-     */
-    protected boolean enableSelectEvent() {
-        return false;
-    }
-
-    public A update(Consumer<A> updater) {
-        A a = (A) this;
-        updater.accept(a);
-//        updateEvent();
-        return a;
-    }
+    private Auditor auditor = new Auditor();
 
 }

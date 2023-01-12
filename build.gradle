@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.yfway.base'
-version = '0.0.2-SNAPSHOT'
+version = '0.0.3-SNAPSHOT'
 sourceCompatibility = '17'
 
 tasks.withType(JavaCompile) {
@@ -54,7 +54,7 @@ subprojects {
     }
 
     dependencies {
-        implementation('com.yfway.base:yfway-base-utils:1.1.2-SNAPSHOT') {
+        implementation('com.yfway.base:yfway-base-utils:1.5.2-SNAPSHOT') {
             exclude group: 'io.springfox', module: 'springfox-boot-starter'
         }
         compileOnly 'org.projectlombok:lombok'

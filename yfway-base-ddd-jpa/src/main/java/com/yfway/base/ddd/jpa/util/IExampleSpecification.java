@@ -1,24 +1,46 @@
 package com.yfway.base.ddd.jpa.util;
 
-import com.yfway.base.ddd.jpa.util.IPageRequest.ConditionColumn;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yfway.base.ddd.common.IPageRequest;
+import com.yfway.base.ddd.common.IPageRequest.ConditionColumn;
+import com.yfway.base.ddd.common.IPageRequest.MatchingType;
+import com.yfway.base.utils.YfJsonUtils;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaBuilder.In;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.From;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.Attribute.PersistentAttributeType;
 import javax.persistence.metamodel.ManagedType;
 import javax.persistence.metamodel.SingularAttribute;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.domain.ExampleMatcher.PropertyValueTransformer;
 import org.springframework.data.jpa.convert.QueryByExamplePredicateBuilder;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.query.EscapeCharacter;
+import org.springframework.data.support.ExampleMatcherAccessor;
+import org.springframework.data.util.DirectFieldAccessFallbackBeanWrapper;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author hon_him
@@ -65,15 +87,41 @@ public class IExampleSpecification<T> implements Specification<T> {
 
     private Predicate getPredicate(List<ConditionColumn> conditionColumns, CriteriaBuilder cb, Root<?> root,
         ManagedType<?> type) {
+        Boolean matchAll = iPageRequest.getMatchAll();
         Map<String, List<ConditionColumn>> groups = conditionColumns.stream()
             .collect(Collectors.groupingBy(ConditionColumn::getName));
-        Boolean matchAll = iPageRequest.getMatchAll();
+        List<Predicate> predicates = getPredicates("", groups, cb, root, type, new PathNode("root", null, ""));
+        return matchAll ? cb.and(predicates.toArray(Predicate[]::new)) : cb.or(predicates.toArray(Predicate[]::new));
+    }
+
+    private List<Predicate> getPredicates(String path, Map<String, List<ConditionColumn>> groups, CriteriaBuilder cb, Path<?> root,
+        ManagedType<?> type, PathNode currentNode) {
         List<Predicate> predicates = new ArrayList<>();
         Predicate predicate = null;
         for (SingularAttribute<?, ?> attribute : type.getSingularAttributes()) {
             String name = attribute.getName();
-            if (groups.containsKey(name)) {
-                List<ConditionColumn> group = groups.get(name);
+            String currentPath = StringUtils.isBlank(path) ? name : path + "." + name;
+
+            if (attribute.getPersistentAttributeType().equals(PersistentAttributeType.EMBEDDED)
+                || (isAssociation(attribute) && !(root instanceof From))) {
+                predicates
+                    .addAll(getPredicates(currentPath, groups, cb, root.get(name), (ManagedType<?>) attribute.getType(),
+                        currentNode));
+                continue;
+            }
+            if (isAssociation(attribute)) {
+                PathNode node = currentNode.add(name, "attributeValue");
+                if (node.spansCycle()) {
+                    throw new InvalidDataAccessApiUsageException(
+                        String.format("Path '%s' must not span a cyclic property reference!%n%s", currentPath, node));
+                }
+                predicates.addAll(getPredicates(currentPath, groups, cb, ((From<?, ?>) root).join(name),
+                    (ManagedType<?>) attribute.getType(), node));
+                continue;
+            }
+
+            if (groups.containsKey(currentPath)) {
+                List<ConditionColumn> group = groups.get(currentPath);
                 for (ConditionColumn cc : group) {
                     if (attribute.getJavaType().equals(String.class) && String.class.isAssignableFrom(
                         cc.getValue().getClass())) {
@@ -112,11 +160,32 @@ public class IExampleSpecification<T> implements Specification<T> {
 
                     if (Objects.isNull(predicate)) {
                         Expression<Object> expression = root.get(name);
+                        Object conditionValue = cc.getValue();
+                        if (conditionValue instanceof Map) {
+                            continue;
+                        }
                         switch (cc.getType()) {
-                            case IN -> predicate = cb.in(expression).value(cc.getValue());
-                            case NOT_EQUAL -> predicate = cb.notEqual(expression, cc.getValue());
-                            case EQUAL -> predicate = cb.equal(expression, cc.getValue());
-                            default -> predicate = cb.equal(expression, cc.getValue());
+                            case IN -> {
+                                if (conditionValue instanceof Collection<?> collection) {
+                                    In<Object> in = cb.in(expression);
+                                    for (Object o : collection) {
+                                        in = in.value(o);
+                                    }
+                                    predicate = in;
+                                } else if (conditionValue.getClass().isArray()) {
+                                    Object[] value = (Object[]) conditionValue;
+                                    In<Object> in = cb.in(expression);
+                                    for (Object o : value) {
+                                        in = in.value(o);
+                                    }
+                                    predicate = in;
+                                } else {
+                                    predicate = cb.in(expression).value(conditionValue);
+                                }
+                            }
+                            case NOT_EQUAL -> predicate = cb.notEqual(expression, conditionValue);
+                            case EQUAL -> predicate = cb.equal(expression, conditionValue);
+                            default -> predicate = cb.equal(expression, conditionValue);
                         }
                     }
                     predicates.add(predicate);
@@ -126,7 +195,81 @@ public class IExampleSpecification<T> implements Specification<T> {
         if (CollectionUtils.isEmpty(predicates)) {
             predicates.add(cb.isTrue(cb.literal(true)));
         }
-        return matchAll ? cb.and(predicates.toArray(Predicate[]::new)) : cb.or(predicates.toArray(Predicate[]::new));
+        return predicates;
+
+    }
+
+    private static final Set<PersistentAttributeType> ASSOCIATION_TYPES;
+
+    static {
+        ASSOCIATION_TYPES = EnumSet.of(PersistentAttributeType.MANY_TO_MANY, //
+            PersistentAttributeType.MANY_TO_ONE, //
+            PersistentAttributeType.ONE_TO_MANY, //
+            PersistentAttributeType.ONE_TO_ONE);
+    }
+
+    private static boolean isAssociation(Attribute<?, ?> attribute) {
+        return ASSOCIATION_TYPES.contains(attribute.getPersistentAttributeType());
+    }
+
+    private static class PathNode {
+
+        String name;
+        @Nullable
+        PathNode parent;
+        List<PathNode> siblings = new ArrayList<>();
+        @Nullable Object value;
+
+        PathNode(String edge, @Nullable PathNode parent, @Nullable Object value) {
+
+            this.name = edge;
+            this.parent = parent;
+            this.value = value;
+        }
+
+        PathNode add(String attribute, @Nullable Object value) {
+
+            PathNode node = new PathNode(attribute, this, value);
+            siblings.add(node);
+            return node;
+        }
+
+        boolean spansCycle() {
+
+            if (value == null) {
+                return false;
+            }
+
+            String identityHex = ObjectUtils.getIdentityHexString(value);
+            PathNode current = parent;
+
+            while (current != null) {
+
+                if (current.value != null && ObjectUtils.getIdentityHexString(current.value).equals(identityHex)) {
+                    return true;
+                }
+                current = current.parent;
+            }
+
+            return false;
+        }
+
+        @Override
+        public String toString() {
+
+            StringBuilder sb = new StringBuilder();
+            if (parent != null) {
+                sb.append(parent);
+                sb.append(" -");
+                sb.append(name);
+                sb.append("-> ");
+            }
+
+            sb.append("[{ ");
+            sb.append(ObjectUtils.nullSafeToString(value));
+            sb.append(" }]");
+            return sb.toString();
+        }
     }
 
 }

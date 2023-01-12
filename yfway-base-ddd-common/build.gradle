@@ -4,8 +4,6 @@ plugins {
 }
 
 dependencies {
-    api(project(':yfway-base-ddd-common'))
-    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
     implementation('jakarta.validation:jakarta.validation-api:2.0.2')
 }
 

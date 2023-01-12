@@ -1,6 +1,5 @@
-package com.yfway.base.ddd.jpa.util;
+package com.yfway.base.ddd.common;
 
-import com.yfway.base.core.common.param.BaseParam;
 import java.io.Serializable;
 import java.util.List;
 import lombok.AllArgsConstructor;

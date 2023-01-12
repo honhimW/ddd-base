@@ -18,9 +18,10 @@ public class ValidatorUtils {
 
     protected static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     private static final Class<?>[] GROUPS = new Class[0];
+    private static final String[] ARGS = {};
 
     public static void validate(Object arugment) {
-        validate(arugment, null);
+        validate(arugment, ARGS);
     }
 
     public static void validate(Object arugment, String[] excludesArgs) {
