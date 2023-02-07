@@ -5,10 +5,13 @@ import com.yfway.base.ddd.jpa.domain.event.DomainEvent;
 import com.yfway.base.ddd.jpa.model.DaoAction;
 import com.yfway.base.ddd.test.domain.user.event.UserEvent;
 import com.yfway.base.utils.YfJsonUtils;
+import java.time.LocalDateTime;
 import java.util.function.Function;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -52,6 +55,14 @@ public class User extends AbstractLogicDeleteAR<User, String> {
     @Column(nullable = false)
     @NotNull
     private String phoneNumber;
+
+    @Column(nullable = false)
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
+
+    @Column
+    private LocalDateTime time;
 
     @Embedded
     @NotNull

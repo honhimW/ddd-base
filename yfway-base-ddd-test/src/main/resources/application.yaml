@@ -3,7 +3,7 @@ spring:
     name: ddd-test
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://10.37.1.132:4306/test?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT
+    url: jdbc:mysql://10.37.1.133:4306/test?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT
     username: root
     password: testdb
     hikari:
@@ -19,12 +19,12 @@ spring:
       naming:
         implicit-strategy: com.yfway.base.ddd.jpa.strategy.YfImplicitStrategy
         physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
-  cloud:
-    stream:
-      default-binder: kafka
-      kafka:
-        binder:
-          brokers: 10.37.1.132
+#  cloud:
+#    stream:
+#      default-binder: kafka
+#      kafka:
+#        binder:
+#          brokers: 10.37.1.132
 
 
 server:

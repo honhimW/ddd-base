@@ -1,9 +1,19 @@
 package com.yfway.base.ddd.test;
 
+import com.yfway.base.ddd.common.IPageRequest;
+import com.yfway.base.ddd.common.IPageRequest.ConditionColumn;
+import com.yfway.base.ddd.common.IPageRequest.MatchingType;
+import com.yfway.base.ddd.jpa.util.PageUtils;
+import com.yfway.base.ddd.test.domain.user.Password;
 import com.yfway.base.ddd.test.domain.user.User;
+import com.yfway.base.ddd.test.domain.user.UserStatus;
 import com.yfway.base.ddd.test.domain.user.repository.UserRepository;
 import com.yfway.base.ddd.test.domain.user.service.UserServiceImpl;
+import com.yfway.base.utils.YfDateTimeUtils;
 import com.yfway.base.utils.YfJsonUtils;
+import com.yfway.base.utils.YfRandomUtils;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.MethodOrderer;
@@ -20,6 +30,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 /**
  * @author hon_him
@@ -45,6 +56,19 @@ public class Tests {
             entity.setId(String.valueOf(i));
             entity.setPhoneNumber(String.valueOf(ThreadLocalRandom.current().nextInt(0, 1_000)));
             entity.setName(hello.get(i));
+            entity.setPassword(Password.of("123"));
+            entity.setStatus(ThreadLocalRandom.current().nextBoolean() ? UserStatus.NORMAL : UserStatus.SICK);
+            entity.setTime(LocalDateTime.now().plusSeconds(ThreadLocalRandom.current().nextInt(-100000, 100000)));
+            userRepository.saveAndFlush(entity);
+        }
+        for (int i = 10; i < 100; i++) {
+            User entity = new User();
+            entity.setId(String.valueOf(i));
+            entity.setPhoneNumber(YfRandomUtils.randomId(11, YfRandomUtils.NUMBER_CHARS));
+            entity.setName(YfRandomUtils.randomId(10));
+            entity.setPassword(Password.of("123"));
+            entity.setStatus(ThreadLocalRandom.current().nextBoolean() ? UserStatus.NORMAL : UserStatus.SICK);
+            entity.setTime(LocalDateTime.now().plusSeconds(ThreadLocalRandom.current().nextInt(-100000, 100000)));
             userRepository.saveAndFlush(entity);
         }
         sleep(1000L);
@@ -95,6 +119,22 @@ public class Tests {
         Page<User> page = userRepository.findByNameLike("%o%",
             PageRequest.of(0, 10, Sort.by(List.of(Order.desc("phoneNumber")))));
         page.forEach(user -> log.info(YfJsonUtils.toJson(user)));
+    }
+
+    @Test
+    @org.junit.jupiter.api.Order(5)
+    void list() {
+        IPageRequest<User> iPageRequest = new IPageRequest<>();
+        iPageRequest.setPageNo(0);
+        iPageRequest.setPageSize(1000);
+        ConditionColumn e = ConditionColumn.of("status", "SICK");
+        String current = "2023-02-07 17:27:00";
+        ConditionColumn e1 = ConditionColumn.of("time", current, MatchingType.LE);
+        iPageRequest.setConditions(List.of(e, e1));
+        Page<User> paging = PageUtils.paging(userRepository, iPageRequest);
+        LocalDateTime localDateTime = YfDateTimeUtils.parseLocalDateTime(current, "yyyy-MM-dd HH:mm:ss");
+        Assert.state(paging.stream().map(User::getTime).allMatch(localDateTime1 -> localDateTime1.isBefore(localDateTime)), "条件异常");
+        Assert.state(paging.stream().allMatch(user -> user.getStatus() == UserStatus.SICK), "条件异常");
     }
 
     public void sleep(long duration) {

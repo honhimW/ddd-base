@@ -59,6 +59,17 @@ public class IPageRequest<T> implements Serializable {
 
         private MatchingType type = MatchingType.EQUAL;
 
+        public static ConditionColumn of(String name, Object value) {
+            return of(name, value, MatchingType.EQUAL);
+        }
+        public static ConditionColumn of(String name, Object value, MatchingType type) {
+            ConditionColumn column = new ConditionColumn();
+            column.setName(name);
+            column.setValue(value);
+            column.setType(type);
+            return column;
+        }
+
     }
 
     @Data
@@ -73,6 +84,13 @@ public class IPageRequest<T> implements Serializable {
         private String name;
 
         private Boolean desc = false;
+
+        public static OrderColumn of(String name, Boolean desc) {
+            OrderColumn column = new OrderColumn();
+            column.setName(name);
+            column.setDesc(desc);
+            return column;
+        }
 
     }
 

@@ -1,14 +1,14 @@
 package com.yfway.base.ddd.jpa.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.yfway.base.ddd.common.IPageRequest;
 import com.yfway.base.ddd.common.IPageRequest.ConditionColumn;
 import com.yfway.base.ddd.common.IPageRequest.MatchingType;
 import com.yfway.base.utils.YfJsonUtils;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,18 +31,21 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.domain.ExampleMatcher.PropertyValueTransformer;
 import org.springframework.data.jpa.convert.QueryByExamplePredicateBuilder;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.query.EscapeCharacter;
-import org.springframework.data.support.ExampleMatcherAccessor;
-import org.springframework.data.util.DirectFieldAccessFallbackBeanWrapper;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
 /**
+ * 基于{@link IPageRequest.ConditionColumn}扩展的{@link Specification}
+ * </p>
+ * {@link IPageRequest#getCondition()}使用{@link QueryByExamplePredicateBuilder#getPredicate(Root, CriteriaBuilder,
+ * Example)}
+ * </p>
+ * {@link IPageRequest#getConditions()}}转为{@link Predicate}
+ *
  * @author hon_him
  * @since 2022-11-21
  */
@@ -71,6 +74,7 @@ public class IExampleSpecification<T> implements Specification<T> {
         T condition = iPageRequest.getCondition();
         List<Predicate> predicates = new ArrayList<>();
         if (Objects.nonNull(condition)) {
+            // Spring-data-jpa, findByExample
             predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, cb, Example.of(condition)));
         }
         List<ConditionColumn> conditions = iPageRequest.getConditions();
@@ -88,13 +92,29 @@ public class IExampleSpecification<T> implements Specification<T> {
     private Predicate getPredicate(List<ConditionColumn> conditionColumns, CriteriaBuilder cb, Root<?> root,
         ManagedType<?> type) {
         Boolean matchAll = iPageRequest.getMatchAll();
+        conditionColumns.forEach(conditionColumn -> {
+            Object value = conditionColumn.getValue();
+            if (Objects.nonNull(value)) {
+                if (Collection.class.isAssignableFrom(value.getClass()) || value.getClass().isArray()) {
+                    if (value.getClass().isArray()) {
+                        value = Arrays.asList((Object[]) value);
+                    }
+                    Collection<?> value1 = (Collection<?>) value;
+                    for (Object o : value1) {
+
+                    }
+                    conditionColumn.setValue(value);
+                }
+            }
+        });
         Map<String, List<ConditionColumn>> groups = conditionColumns.stream()
             .collect(Collectors.groupingBy(ConditionColumn::getName));
         List<Predicate> predicates = getPredicates("", groups, cb, root, type, new PathNode("root", null, ""));
         return matchAll ? cb.and(predicates.toArray(Predicate[]::new)) : cb.or(predicates.toArray(Predicate[]::new));
     }
 
-    private List<Predicate> getPredicates(String path, Map<String, List<ConditionColumn>> groups, CriteriaBuilder cb, Path<?> root,
+    private List<Predicate> getPredicates(String path, Map<String, List<ConditionColumn>> groups, CriteriaBuilder cb,
+        Path<?> root,
         ManagedType<?> type, PathNode currentNode) {
         List<Predicate> predicates = new ArrayList<>();
         Predicate predicate = null;
@@ -110,7 +130,11 @@ public class IExampleSpecification<T> implements Specification<T> {
                 continue;
             }
             if (isAssociation(attribute)) {
-                PathNode node = currentNode.add(name, "attributeValue");
+                Object attributeValue = Optional.ofNullable(groups.get(currentPath))
+                    .map(conditionColumns -> conditionColumns.get(0))
+                    .map(ConditionColumn::getValue)
+                    .orElse(null);
+                PathNode node = currentNode.add(name, attributeValue);
                 if (node.spansCycle()) {
                     throw new InvalidDataAccessApiUsageException(
                         String.format("Path '%s' must not span a cyclic property reference!%n%s", currentPath, node));
@@ -122,73 +146,118 @@ public class IExampleSpecification<T> implements Specification<T> {
 
             if (groups.containsKey(currentPath)) {
                 List<ConditionColumn> group = groups.get(currentPath);
+                Class<?> attributeJavaType = attribute.getJavaType();
                 for (ConditionColumn cc : group) {
-                    if (attribute.getJavaType().equals(String.class) && String.class.isAssignableFrom(
-                        cc.getValue().getClass())) {
-                        Expression<String> expression = root.get(name);
-                        switch (cc.getType()) {
-                            case CONTAINING -> predicate = cb.like(
-                                expression, //
-                                "%" + escapeCharacter.escape(cc.getValue().toString()) + "%", //
-                                escapeCharacter.getEscapeCharacter() //
-                            );
-                            case STARTING -> predicate = cb.like(//
-                                expression, //
-                                escapeCharacter.escape(cc.getValue().toString()) + "%", //
-                                escapeCharacter.getEscapeCharacter()); //
-                            case ENDING -> predicate = cb.like( //
-                                expression, //
-                                "%" + escapeCharacter.escape(cc.getValue().toString()), //
-                                escapeCharacter.getEscapeCharacter()); //
+                    Object conditionValue = cc.getValue();
+                    // 条件值不为空
+                    if (Objects.nonNull(conditionValue)) {
+                        Class<?> valueType = conditionValue.getClass();
+                        // 匹配方式为”IN“类型时, 值必须为数组或集合类型
+                        if (cc.getType() == MatchingType.IN) {
+                            Expression<Object> expression = root.get(name);
+                            Collection<?> collection;
+                            if (conditionValue.getClass().isArray()) {
+                                Object[] value = (Object[]) conditionValue;
+                                collection = Arrays.stream(value).toList();
+                            } else if (conditionValue instanceof Collection<?>) {
+                                collection = (Collection<?>) conditionValue;
+                            } else {
+                                continue;
+                            }
+                            collection = collection.stream()
+                                .map(o -> readValue(attributeJavaType, o))
+                                .filter(Objects::nonNull)
+                                .toList();
+                            Assert.state(!collection.isEmpty(), "IN collection must not be empty");
+                            In<Object> in = cb.in(expression);
+                            for (Object o : collection) {
+                                in = in.value(o);
+                            }
+                            predicate = in;
                         }
-                    } else if (Number.class.isAssignableFrom(attribute.getJavaType()) && Number.class.isAssignableFrom(cc.getValue().getClass())) {
-                        Expression<Number> expression = root.get(name);
-                        switch (cc.getType()) {
-                            case GT -> predicate = cb.gt(expression, (Number) cc.getValue());
-                            case GE -> predicate = cb.ge(expression, (Number) cc.getValue());
-                            case LT -> predicate = cb.lt(expression, (Number) cc.getValue());
-                            case LE -> predicate = cb.le(expression, (Number) cc.getValue());
-                        }
-                    } else if (Boolean.class.isAssignableFrom(attribute.getJavaType()) && Boolean.class.isAssignableFrom(cc.getValue().getClass())) {
-                        Expression<Boolean> expression = root.get(name);
-                        Boolean value = (Boolean) cc.getValue();
-                        switch (cc.getType()) {
-                            case NOT_EQUAL -> predicate = value ? cb.isFalse(expression) : cb.isTrue(expression);
-                            case EQUAL -> predicate = value ? cb.isTrue(expression) : cb.isFalse(expression);
+
+                        conditionValue = readValue(attributeJavaType, conditionValue);
+                        Assert.state(Objects.nonNull(conditionValue), "conditionValue must not be null");
+                        // 字符串类型的值支持: 前缀, 包含, 后缀
+                        if (attributeJavaType.equals(String.class)) {
+                            Expression<String> expression = root.get(name);
+                            switch (cc.getType()) {
+                                case CONTAINING -> predicate = cb.like(
+                                    expression, //
+                                    "%" + escapeCharacter.escape(conditionValue.toString()) + "%", //
+                                    escapeCharacter.getEscapeCharacter() //
+                                );
+                                case STARTING -> predicate = cb.like(//
+                                    expression, //
+                                    escapeCharacter.escape(conditionValue.toString()) + "%", //
+                                    escapeCharacter.getEscapeCharacter()); //
+                                case ENDING -> predicate = cb.like( //
+                                    expression, //
+                                    "%" + escapeCharacter.escape(conditionValue.toString()), //
+                                    escapeCharacter.getEscapeCharacter()); //
+                                default -> predicate = null;
+                            }
+                            // 数字类型的值支持: 大于, 大于等于, 小于, 小于等于
+                        } else if (Number.class.isAssignableFrom(attributeJavaType)) {
+                            Expression<Number> expression = root.get(name);
+                            switch (cc.getType()) {
+                                case GT -> predicate = cb.gt(expression, (Number) conditionValue);
+                                case GE -> predicate = cb.ge(expression, (Number) conditionValue);
+                                case LT -> predicate = cb.lt(expression, (Number) conditionValue);
+                                case LE -> predicate = cb.le(expression, (Number) conditionValue);
+                                default -> predicate = null;
+                            }
+                            // 可比较类型(如时间等类型)的值支持: 大于, 大于等于, 小于, 小于等于
+                        } else if (Comparable.class.isAssignableFrom(attributeJavaType)) {
+                            Expression<Comparable> expression = root.get(name);
+                            switch (cc.getType()) {
+                                case GT -> predicate = cb.greaterThan(expression, (Comparable) conditionValue);
+                                case GE -> predicate = cb.greaterThanOrEqualTo(expression, (Comparable) conditionValue);
+                                case LT -> predicate = cb.lessThan(expression, (Comparable) conditionValue);
+                                case LE -> predicate = cb.lessThanOrEqualTo(expression, (Comparable) conditionValue);
+                                default -> predicate = null;
+                            }
+                            // 布尔类型的值支持: 等于, 不等于
+                        } else if (Boolean.class.isAssignableFrom(attributeJavaType)
+                            && Boolean.class.isAssignableFrom(valueType)) {
+                            Expression<Boolean> expression = root.get(name);
+                            Boolean value = (Boolean) conditionValue;
+                            switch (cc.getType()) {
+                                case NOT_EQUAL -> predicate = value ? cb.isFalse(expression) : cb.isTrue(expression);
+                                case EQUAL -> predicate = value ? cb.isTrue(expression) : cb.isFalse(expression);
+                                default -> predicate = null;
+                            }
                         }
                     }
-
+                    // 假如上面的条件没有命中对应的predicate
                     if (Objects.isNull(predicate)) {
                         Expression<Object> expression = root.get(name);
-                        Object conditionValue = cc.getValue();
+                        // 忽略Jackson解析出非简单对象
                         if (conditionValue instanceof Map) {
                             continue;
                         }
+                        // 所有类型的值都支持: 等于, 不等于, 为空, 不为空
                         switch (cc.getType()) {
-                            case IN -> {
-                                if (conditionValue instanceof Collection<?> collection) {
-                                    In<Object> in = cb.in(expression);
-                                    for (Object o : collection) {
-                                        in = in.value(o);
-                                    }
-                                    predicate = in;
-                                } else if (conditionValue.getClass().isArray()) {
-                                    Object[] value = (Object[]) conditionValue;
-                                    In<Object> in = cb.in(expression);
-                                    for (Object o : value) {
-                                        in = in.value(o);
-                                    }
-                                    predicate = in;
-                                } else {
-                                    predicate = cb.in(expression).value(conditionValue);
+                            case NOT_EQUAL -> {
+                                if (Objects.isNull(conditionValue)) {
+                                    continue;
                                 }
+                                predicate = cb.notEqual(expression, conditionValue);
                             }
-                            case NOT_EQUAL -> predicate = cb.notEqual(expression, conditionValue);
-                            case EQUAL -> predicate = cb.equal(expression, conditionValue);
-                            default -> predicate = cb.equal(expression, conditionValue);
+                            case EQUAL -> {
+                                if (Objects.isNull(conditionValue)) {
+                                    continue;
+                                }
+                                predicate = cb.equal(expression, conditionValue);
+                            }
+                            case NULL -> predicate = cb.isNull(expression);
+                            case NOT_NULL -> predicate = cb.isNotNull(expression);
+                            default -> predicate = null;
                         }
                     }
-                    predicates.add(predicate);
+                    if (Objects.nonNull(predicate)) {
+                        predicates.add(predicate);
+                    }
                 }
             }
         }
@@ -197,6 +266,16 @@ public class IExampleSpecification<T> implements Specification<T> {
         }
         return predicates;
 
+    }
+
+    public static <T> T readValue(Class<T> type, Object value) {
+        if (Objects.isNull(value)) {
+            return null;
+        }
+        if (type.isAssignableFrom(value.getClass())) {
+            return (T) value;
+        }
+        return JacksonUtils.readValue(type, value);
     }
 
     private static final Set<PersistentAttributeType> ASSOCIATION_TYPES;
@@ -218,7 +297,8 @@ public class IExampleSpecification<T> implements Specification<T> {
         @Nullable
         PathNode parent;
         List<PathNode> siblings = new ArrayList<>();
-        @Nullable Object value;
+        @Nullable
+        Object value;
 
         PathNode(String edge, @Nullable PathNode parent, @Nullable Object value) {
 

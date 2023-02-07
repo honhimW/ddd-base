@@ -1,10 +1,27 @@
 package com.yfway.base.ddd.jpa.util;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.yfway.base.ddd.common.IPageRequest;
-import com.yfway.base.ddd.common.PageInfoVO;
 import com.yfway.base.ddd.common.IPageRequest.OrderColumn;
+import com.yfway.base.ddd.common.PageInfoVO;
+import com.yfway.base.utils.YfJsonUtils;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.data.domain.Page;
@@ -91,6 +108,44 @@ public class PageUtils {
 
     private static int originPageNo(int pageNo) {
         return pageNo + FIRST_PAGE_NO;
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        ObjectMapper mvcObjectMapper = YfJsonUtils.getMvcObjectMapper();
+        ObjectNode objectNode = mvcObjectMapper.createObjectNode();
+        CC cc = new CC();
+        cc.b = true;
+        cc.i = 1;
+        cc.str = "true";
+        cc.localDateTime = LocalDateTime.now();
+        JsonNode jsonNode = mvcObjectMapper.valueToTree(cc);
+        System.out.println(mvcObjectMapper.writeValueAsString(jsonNode));
+        Object o1 = mvcObjectMapper.readerFor(Integer.class)
+            .readValue(String.format("\"%s\"", "1231"));
+        System.out.println(o1.toString());
+        Object o = LocalDateTime.now().plusDays(1);
+        System.out.println(mvcObjectMapper.writerFor(LocalDateTime.class).writeValueAsString(o));
+
+    }
+
+    @Data
+    @EqualsAndHashCode(callSuper = false)
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CC implements Serializable {
+        Integer i;
+
+        Boolean b;
+
+        String str;
+
+        LocalDateTime localDateTime;
+
+    }
+
+    public enum EE {
+        HELLO,WORLD;
     }
 
 }
