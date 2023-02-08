@@ -6,9 +6,7 @@ plugins {
 dependencies {
     api(project(':yfway-base-ddd-common'))
     api('com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.14.2')
-    implementation('org.springframework.boot:spring-boot-starter-data-jpa') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
-    }
+    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
     implementation('jakarta.validation:jakarta.validation-api:2.0.2')
 }
 

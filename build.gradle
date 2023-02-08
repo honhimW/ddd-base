@@ -68,6 +68,11 @@ subprojects {
         annotationProcessor('org.mapstruct:mapstruct-jdk8:1.5.3.Final')
     }
 
+    // 全局排除 org.springframework.boot:spring-boot-starter-logging
+    configurations.configureEach {
+        it.exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-logging')
+    }
+
     dependencyManagement {
         imports {
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
