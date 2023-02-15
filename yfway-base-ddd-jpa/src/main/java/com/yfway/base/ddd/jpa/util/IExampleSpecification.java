@@ -1,10 +1,8 @@
 package com.yfway.base.ddd.jpa.util;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.yfway.base.ddd.common.IPageRequest;
 import com.yfway.base.ddd.common.IPageRequest.ConditionColumn;
 import com.yfway.base.ddd.common.IPageRequest.MatchingType;
-import com.yfway.base.utils.YfJsonUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -92,21 +90,6 @@ public class IExampleSpecification<T> implements Specification<T> {
     private Predicate getPredicate(List<ConditionColumn> conditionColumns, CriteriaBuilder cb, Root<?> root,
         ManagedType<?> type) {
         Boolean matchAll = iPageRequest.getMatchAll();
-        conditionColumns.forEach(conditionColumn -> {
-            Object value = conditionColumn.getValue();
-            if (Objects.nonNull(value)) {
-                if (Collection.class.isAssignableFrom(value.getClass()) || value.getClass().isArray()) {
-                    if (value.getClass().isArray()) {
-                        value = Arrays.asList((Object[]) value);
-                    }
-                    Collection<?> value1 = (Collection<?>) value;
-                    for (Object o : value1) {
-
-                    }
-                    conditionColumn.setValue(value);
-                }
-            }
-        });
         Map<String, List<ConditionColumn>> groups = conditionColumns.stream()
             .collect(Collectors.groupingBy(ConditionColumn::getName));
         List<Predicate> predicates = getPredicates("", groups, cb, root, type, new PathNode("root", null, ""));
@@ -174,58 +157,57 @@ public class IExampleSpecification<T> implements Specification<T> {
                                 in = in.value(o);
                             }
                             predicate = in;
-                        }
-
-                        conditionValue = readValue(attributeJavaType, conditionValue);
-                        Assert.state(Objects.nonNull(conditionValue), "conditionValue must not be null");
-                        // 字符串类型的值支持: 前缀, 包含, 后缀
-                        if (attributeJavaType.equals(String.class)) {
-                            Expression<String> expression = root.get(name);
-                            switch (cc.getType()) {
-                                case CONTAINING -> predicate = cb.like(
-                                    expression, //
-                                    "%" + escapeCharacter.escape(conditionValue.toString()) + "%", //
-                                    escapeCharacter.getEscapeCharacter() //
-                                );
-                                case STARTING -> predicate = cb.like(//
-                                    expression, //
-                                    escapeCharacter.escape(conditionValue.toString()) + "%", //
-                                    escapeCharacter.getEscapeCharacter()); //
-                                case ENDING -> predicate = cb.like( //
-                                    expression, //
-                                    "%" + escapeCharacter.escape(conditionValue.toString()), //
-                                    escapeCharacter.getEscapeCharacter()); //
-                                default -> predicate = null;
-                            }
-                            // 数字类型的值支持: 大于, 大于等于, 小于, 小于等于
-                        } else if (Number.class.isAssignableFrom(attributeJavaType)) {
-                            Expression<Number> expression = root.get(name);
-                            switch (cc.getType()) {
-                                case GT -> predicate = cb.gt(expression, (Number) conditionValue);
-                                case GE -> predicate = cb.ge(expression, (Number) conditionValue);
-                                case LT -> predicate = cb.lt(expression, (Number) conditionValue);
-                                case LE -> predicate = cb.le(expression, (Number) conditionValue);
-                                default -> predicate = null;
-                            }
-                            // 可比较类型(如时间等类型)的值支持: 大于, 大于等于, 小于, 小于等于
-                        } else if (Comparable.class.isAssignableFrom(attributeJavaType)) {
-                            Expression<Comparable> expression = root.get(name);
-                            switch (cc.getType()) {
-                                case GT -> predicate = cb.greaterThan(expression, (Comparable) conditionValue);
-                                case GE -> predicate = cb.greaterThanOrEqualTo(expression, (Comparable) conditionValue);
-                                case LT -> predicate = cb.lessThan(expression, (Comparable) conditionValue);
-                                case LE -> predicate = cb.lessThanOrEqualTo(expression, (Comparable) conditionValue);
-                                default -> predicate = null;
-                            }
-                            // 布尔类型的值支持: 等于, 不等于
-                        } else if (Boolean.class.isAssignableFrom(attributeJavaType)
-                            && Boolean.class.isAssignableFrom(valueType)) {
-                            Expression<Boolean> expression = root.get(name);
-                            Boolean value = (Boolean) conditionValue;
-                            switch (cc.getType()) {
-                                case NOT_EQUAL -> predicate = value ? cb.isFalse(expression) : cb.isTrue(expression);
-                                case EQUAL -> predicate = value ? cb.isTrue(expression) : cb.isFalse(expression);
-                                default -> predicate = null;
+                        } else {
+                            conditionValue = readValue(attributeJavaType, conditionValue);
+                            // 字符串类型的值支持: 前缀, 包含, 后缀
+                            if (attributeJavaType.equals(String.class)) {
+                                Expression<String> expression = root.get(name);
+                                switch (cc.getType()) {
+                                    case CONTAINING -> predicate = cb.like(
+                                        expression, //
+                                        "%" + escapeCharacter.escape(conditionValue.toString()) + "%", //
+                                        escapeCharacter.getEscapeCharacter() //
+                                    );
+                                    case STARTING -> predicate = cb.like(//
+                                        expression, //
+                                        escapeCharacter.escape(conditionValue.toString()) + "%", //
+                                        escapeCharacter.getEscapeCharacter()); //
+                                    case ENDING -> predicate = cb.like( //
+                                        expression, //
+                                        "%" + escapeCharacter.escape(conditionValue.toString()), //
+                                        escapeCharacter.getEscapeCharacter()); //
+                                    default -> predicate = null;
+                                }
+                                // 数字类型的值支持: 大于, 大于等于, 小于, 小于等于
+                            } else if (Number.class.isAssignableFrom(attributeJavaType)) {
+                                Expression<Number> expression = root.get(name);
+                                switch (cc.getType()) {
+                                    case GT -> predicate = cb.gt(expression, (Number) conditionValue);
+                                    case GE -> predicate = cb.ge(expression, (Number) conditionValue);
+                                    case LT -> predicate = cb.lt(expression, (Number) conditionValue);
+                                    case LE -> predicate = cb.le(expression, (Number) conditionValue);
+                                    default -> predicate = null;
+                                }
+                                // 可比较类型(如时间等类型)的值支持: 大于, 大于等于, 小于, 小于等于
+                            } else if (Comparable.class.isAssignableFrom(attributeJavaType)) {
+                                Expression<Comparable> expression = root.get(name);
+                                switch (cc.getType()) {
+                                    case GT -> predicate = cb.greaterThan(expression, (Comparable) conditionValue);
+                                    case GE -> predicate = cb.greaterThanOrEqualTo(expression, (Comparable) conditionValue);
+                                    case LT -> predicate = cb.lessThan(expression, (Comparable) conditionValue);
+                                    case LE -> predicate = cb.lessThanOrEqualTo(expression, (Comparable) conditionValue);
+                                    default -> predicate = null;
+                                }
+                                // 布尔类型的值支持: 等于, 不等于
+                            } else if (Boolean.class.isAssignableFrom(attributeJavaType)
+                                && Boolean.class.isAssignableFrom(valueType)) {
+                                Expression<Boolean> expression = root.get(name);
+                                Boolean value = (Boolean) conditionValue;
+                                switch (cc.getType()) {
+                                    case NOT_EQUAL -> predicate = value ? cb.isFalse(expression) : cb.isTrue(expression);
+                                    case EQUAL -> predicate = value ? cb.isTrue(expression) : cb.isFalse(expression);
+                                    default -> predicate = null;
+                                }
                             }
                         }
                     }
@@ -268,6 +250,7 @@ public class IExampleSpecification<T> implements Specification<T> {
 
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T readValue(Class<T> type, Object value) {
         if (Objects.isNull(value)) {
             return null;
@@ -291,6 +274,7 @@ public class IExampleSpecification<T> implements Specification<T> {
         return ASSOCIATION_TYPES.contains(attribute.getPersistentAttributeType());
     }
 
+    @SuppressWarnings("all")
     private static class PathNode {
 
         String name;
