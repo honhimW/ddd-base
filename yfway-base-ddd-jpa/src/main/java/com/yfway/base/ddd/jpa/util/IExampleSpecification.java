@@ -3,6 +3,8 @@ package com.yfway.base.ddd.jpa.util;
 import com.yfway.base.ddd.common.IPageRequest;
 import com.yfway.base.ddd.common.IPageRequest.ConditionColumn;
 import com.yfway.base.ddd.common.IPageRequest.MatchingType;
+
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,10 +73,15 @@ public class IExampleSpecification<T> implements Specification<T> {
 
         T condition = iPageRequest.getCondition();
         List<Predicate> predicates = new ArrayList<>();
-        if (Objects.nonNull(condition)) {
-            // Spring-data-jpa, findByExample
-            predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, cb, Example.of(condition)));
+        if (Objects.isNull(condition)) {
+            try {
+                condition = root.getModel().getJavaType().getConstructor().newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException("Root model type [" + root.getModel().getJavaType().getName() + "] must has a public no arg constructor.", e);
+            }
         }
+        // Spring-data-jpa, findByExample
+        predicates.add(QueryByExamplePredicateBuilder.getPredicate(root, cb, Example.of(condition)));
         List<ConditionColumn> conditions = iPageRequest.getConditions();
         if (CollectionUtils.isNotEmpty(conditions)) {
             predicates.add(getPredicate(conditions, cb, root, root.getModel()));
@@ -243,9 +250,9 @@ public class IExampleSpecification<T> implements Specification<T> {
                 }
             }
         }
-        if (CollectionUtils.isEmpty(predicates)) {
-            predicates.add(cb.isTrue(cb.literal(true)));
-        }
+//        if (CollectionUtils.isEmpty(predicates)) {
+//            predicates.add(cb.isTrue(cb.literal(true)));
+//        }
         return predicates;
 
     }
