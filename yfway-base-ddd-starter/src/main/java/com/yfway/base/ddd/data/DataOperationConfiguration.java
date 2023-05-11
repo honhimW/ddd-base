@@ -3,12 +3,11 @@ package com.yfway.base.ddd.data;
 import com.baomidou.mybatisplus.core.MybatisConfiguration;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.yfway.base.ddd.jpa.YfDDDJpa;
+import com.yfway.base.ddd.jpa.util.PageUtils;
 import com.yfway.base.ddd.mp.YfDDDMp;
 import com.yfway.base.ddd.mp.domain.AbstractAR;
-import java.util.Collection;
-import java.util.Optional;
-import javax.sql.DataSource;
 import org.apache.ibatis.plugin.Invocation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -16,6 +15,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import javax.annotation.PostConstruct;
+import javax.sql.DataSource;
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * @author hon_him
@@ -31,6 +35,18 @@ abstract class DataOperationConfiguration {
         JpaRepository.class
     })
     static class JpaConfiguration {
+
+        @Value("${spring.data.web.pageable.one-indexed-parameters:true}")
+        private Boolean firstPageNo;
+
+        @PostConstruct
+        void setupPageUtils() {
+            if (firstPageNo) {
+                PageUtils.setFirstPageNo(1);
+            } else {
+                PageUtils.setFirstPageNo(0);
+            }
+        }
 
         @Bean
         @ConditionalOnMissingBean(AuditorAware.class)

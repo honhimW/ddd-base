@@ -4,19 +4,22 @@ import com.yfway.base.ddd.jpa.domain.DomainEntity;
 import com.yfway.base.ddd.jpa.domain.ext.LogicDelete;
 import com.yfway.base.ddd.jpa.domain.ext.SelectEvent;
 import com.yfway.base.ddd.jpa.model.DaoAction;
-import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.persistence.PostLoad;
 import javax.persistence.PostPersist;
 import javax.persistence.PostRemove;
 import javax.persistence.PostUpdate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.transaction.annotation.Transactional;
+import java.util.Optional;
 
 /**
  * @author hon_him
  * @since 2022-10-27
  */
+
+@SuppressWarnings("all")
 @Transactional
 public class CRUDListener {
 

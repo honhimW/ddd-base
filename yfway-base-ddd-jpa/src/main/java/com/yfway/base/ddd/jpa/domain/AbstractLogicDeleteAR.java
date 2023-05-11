@@ -1,17 +1,18 @@
 package com.yfway.base.ddd.jpa.domain;
 
 import com.yfway.base.ddd.jpa.domain.ext.LogicDelete;
-import java.util.Objects;
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
-import javax.persistence.Version;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Comment;
 import org.hibernate.annotations.Where;
+
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.PrePersist;
+import javax.persistence.Version;
+import java.util.Objects;
 
 /**
  * @author hon_him
@@ -50,12 +51,10 @@ public abstract class AbstractLogicDeleteAR<A extends AbstractLogicDeleteAR<A, I
         this.setVersion(1L);
     }
 
+    @SuppressWarnings("unchecked")
     public A logicDelete() {
         A a = (A) this;
         this.setDeleted(true);
-//        Optional.ofNullable(eventBuilder())
-//            .map(builder -> builder.apply(DaoAction.LOGIC_DELETE))
-//            .ifPresent(this::registerEvent);
         return a;
     }
 

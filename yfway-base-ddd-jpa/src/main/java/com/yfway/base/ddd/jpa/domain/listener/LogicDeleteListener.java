@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
  * @author hon_him
  * @since 2022-10-27
  */
+
+@SuppressWarnings("all")
 @Transactional
 public class LogicDeleteListener {
 

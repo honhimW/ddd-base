@@ -3,30 +3,6 @@ package com.yfway.base.ddd.jpa.util;
 import com.yfway.base.ddd.common.IPageRequest;
 import com.yfway.base.ddd.common.IPageRequest.ConditionColumn;
 import com.yfway.base.ddd.common.IPageRequest.MatchingType;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaBuilder.In;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.From;
-import javax.persistence.criteria.Path;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import javax.persistence.metamodel.Attribute;
-import javax.persistence.metamodel.Attribute.PersistentAttributeType;
-import javax.persistence.metamodel.ManagedType;
-import javax.persistence.metamodel.SingularAttribute;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
@@ -37,6 +13,16 @@ import org.springframework.data.jpa.repository.query.EscapeCharacter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
+
+import javax.annotation.Nonnull;
+import javax.persistence.criteria.*;
+import javax.persistence.criteria.CriteriaBuilder.In;
+import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.Attribute.PersistentAttributeType;
+import javax.persistence.metamodel.ManagedType;
+import javax.persistence.metamodel.SingularAttribute;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 基于{@link IPageRequest.ConditionColumn}扩展的{@link Specification}
@@ -66,7 +52,7 @@ public class IExampleSpecification<T> implements Specification<T> {
     }
 
     @Override
-    public Predicate toPredicate(Root<T> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+    public Predicate toPredicate(@Nonnull Root<T> root, @Nonnull CriteriaQuery<?> query, @Nonnull CriteriaBuilder cb) {
         Assert.notNull(root, "Root must not be null!");
         Assert.notNull(cb, "CriteriaBuilder must not be null!");
         Assert.notNull(iPageRequest, "iPageRequest must not be null!");
@@ -95,17 +81,44 @@ public class IExampleSpecification<T> implements Specification<T> {
     }
 
     private Predicate getPredicate(List<ConditionColumn> conditionColumns, CriteriaBuilder cb, Root<?> root,
-        ManagedType<?> type) {
+                                   ManagedType<?> type) {
         Boolean matchAll = iPageRequest.getMatchAll();
-        Map<String, List<ConditionColumn>> groups = conditionColumns.stream()
-            .collect(Collectors.groupingBy(ConditionColumn::getName));
-        List<Predicate> predicates = getPredicates("", groups, cb, root, type, new PathNode("root", null, ""));
-        return matchAll ? cb.and(predicates.toArray(Predicate[]::new)) : cb.or(predicates.toArray(Predicate[]::new));
+
+        Map<String, List<ConditionColumn>> groups = conditionColumns.stream().collect(Collectors.groupingBy(ConditionColumn::getGroup));
+        if (groups.size() == 1) {
+            // 只有一个组的时候(默认组)的时候
+            Map<String, List<ConditionColumn>> keyConditions = conditionColumns.stream()
+                .collect(Collectors.groupingBy(ConditionColumn::getName));
+            List<Predicate> predicates = getPredicates("", keyConditions, cb, root, type, new PathNode("root", null, ""));
+            return matchAll ? cb.and(predicates.toArray(Predicate[]::new)) : cb.or(predicates.toArray(Predicate[]::new));
+        } else {
+            List<Predicate> finalPredicates = new ArrayList<>(groups.size());
+            List<List<Predicate>> roots = groups.values().stream()
+                .map(ccs -> {
+                    Map<String, List<ConditionColumn>> kcs = ccs.stream().collect(Collectors.groupingBy(ConditionColumn::getName));
+                    return getPredicates("", kcs, cb, root, type, new PathNode("root", null, ""));
+                })
+                .toList();
+            if (matchAll) {
+                // 多个组且全比配时按照组内or条件, 组间and条件
+                roots.stream()
+                    .map(predicates -> cb.or(predicates.toArray(Predicate[]::new)))
+                    .forEach(finalPredicates::add);
+                return cb.and(finalPredicates.toArray(Predicate[]::new));
+            } else {
+                // 否则按照组内and条件, 组间or条件
+                roots.stream()
+                    .map(predicates -> cb.and(predicates.toArray(Predicate[]::new)))
+                    .forEach(finalPredicates::add);
+                return cb.or(finalPredicates.toArray(Predicate[]::new));
+            }
+        }
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private List<Predicate> getPredicates(String path, Map<String, List<ConditionColumn>> groups, CriteriaBuilder cb,
-        Path<?> root,
-        ManagedType<?> type, PathNode currentNode) {
+                                          Path<?> root,
+                                          ManagedType<?> type, PathNode currentNode) {
         List<Predicate> predicates = new ArrayList<>();
         Predicate predicate = null;
         for (SingularAttribute<?, ?> attribute : type.getSingularAttributes()) {
@@ -172,16 +185,16 @@ public class IExampleSpecification<T> implements Specification<T> {
                                 switch (cc.getType()) {
                                     case CONTAINING -> predicate = cb.like(
                                         expression, //
-                                        "%" + escapeCharacter.escape(conditionValue.toString()) + "%", //
+                                        "%" + escapeCharacter.escape((String) conditionValue) + "%", //
                                         escapeCharacter.getEscapeCharacter() //
                                     );
                                     case STARTING -> predicate = cb.like(//
                                         expression, //
-                                        escapeCharacter.escape(conditionValue.toString()) + "%", //
+                                        escapeCharacter.escape((String) conditionValue) + "%", //
                                         escapeCharacter.getEscapeCharacter()); //
                                     case ENDING -> predicate = cb.like( //
                                         expression, //
-                                        "%" + escapeCharacter.escape(conditionValue.toString()), //
+                                        "%" + escapeCharacter.escape((String) conditionValue), //
                                         escapeCharacter.getEscapeCharacter()); //
                                     default -> predicate = null;
                                 }
@@ -200,9 +213,11 @@ public class IExampleSpecification<T> implements Specification<T> {
                                 Expression<Comparable> expression = root.get(name);
                                 switch (cc.getType()) {
                                     case GT -> predicate = cb.greaterThan(expression, (Comparable) conditionValue);
-                                    case GE -> predicate = cb.greaterThanOrEqualTo(expression, (Comparable) conditionValue);
+                                    case GE ->
+                                        predicate = cb.greaterThanOrEqualTo(expression, (Comparable) conditionValue);
                                     case LT -> predicate = cb.lessThan(expression, (Comparable) conditionValue);
-                                    case LE -> predicate = cb.lessThanOrEqualTo(expression, (Comparable) conditionValue);
+                                    case LE ->
+                                        predicate = cb.lessThanOrEqualTo(expression, (Comparable) conditionValue);
                                     default -> predicate = null;
                                 }
                                 // 布尔类型的值支持: 等于, 不等于
@@ -211,8 +226,10 @@ public class IExampleSpecification<T> implements Specification<T> {
                                 Expression<Boolean> expression = root.get(name);
                                 Boolean value = (Boolean) conditionValue;
                                 switch (cc.getType()) {
-                                    case NOT_EQUAL -> predicate = value ? cb.isFalse(expression) : cb.isTrue(expression);
-                                    case EQUAL -> predicate = value ? cb.isTrue(expression) : cb.isFalse(expression);
+                                    case NOT_EQUAL ->
+                                        predicate = Boolean.TRUE.equals(value) ? cb.isFalse(expression) : cb.isTrue(expression);
+                                    case EQUAL ->
+                                        predicate = Boolean.TRUE.equals(value) ? cb.isTrue(expression) : cb.isFalse(expression);
                                     default -> predicate = null;
                                 }
                             }
@@ -241,7 +258,8 @@ public class IExampleSpecification<T> implements Specification<T> {
                             }
                             case NULL -> predicate = cb.isNull(expression);
                             case NOT_NULL -> predicate = cb.isNotNull(expression);
-                            default -> predicate = null;
+                            default -> {
+                            }
                         }
                     }
                     if (Objects.nonNull(predicate)) {
@@ -250,9 +268,6 @@ public class IExampleSpecification<T> implements Specification<T> {
                 }
             }
         }
-//        if (CollectionUtils.isEmpty(predicates)) {
-//            predicates.add(cb.isTrue(cb.literal(true)));
-//        }
         return predicates;
 
     }

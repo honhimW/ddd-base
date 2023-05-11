@@ -59,6 +59,8 @@ public class IPageRequest<T> implements Serializable {
 
         private MatchingType type = MatchingType.EQUAL;
 
+        private String group = "root";
+
         public static ConditionColumn of(String name, Object value) {
             return of(name, value, MatchingType.EQUAL);
         }

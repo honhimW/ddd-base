@@ -11,6 +11,8 @@ import org.apache.commons.lang3.ArrayUtils;
  * @author hon_him
  * @since 2022-11-29
  */
+
+@SuppressWarnings("unused")
 @Slf4j
 public abstract class AbstractListener {
 

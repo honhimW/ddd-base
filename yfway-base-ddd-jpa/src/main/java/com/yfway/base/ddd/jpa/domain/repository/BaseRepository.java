@@ -2,8 +2,6 @@ package com.yfway.base.ddd.jpa.domain.repository;
 
 import com.yfway.base.ddd.jpa.domain.AbstractLogicDeleteAR;
 import org.springframework.data.domain.Example;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
 import org.springframework.transaction.annotation.Transactional;

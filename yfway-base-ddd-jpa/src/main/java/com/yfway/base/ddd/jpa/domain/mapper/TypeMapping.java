@@ -13,7 +13,7 @@ import java.util.function.Function;
  * @author hon_him
  * @since 2022-06-28
  */
-
+@SuppressWarnings("unused")
 public interface TypeMapping {
 
     TypeMapping INSTANCE = new TypeMapping() {

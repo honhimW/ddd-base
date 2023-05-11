@@ -1,21 +1,11 @@
 package com.yfway.base.ddd.jpa.domain.listener;
 
 import com.yfway.base.ddd.jpa.domain.AbstractAuditAR;
-import com.yfway.base.ddd.jpa.domain.DomainEntity;
 import com.yfway.base.ddd.jpa.domain.ext.Auditor;
-import com.yfway.base.ddd.jpa.domain.ext.LogicDelete;
-import com.yfway.base.ddd.jpa.domain.ext.SelectEvent;
-import com.yfway.base.ddd.jpa.model.DaoAction;
-import java.util.Objects;
-import java.util.Optional;
-import javax.persistence.PostLoad;
-import javax.persistence.PostPersist;
-import javax.persistence.PostRemove;
-import javax.persistence.PostUpdate;
-import javax.persistence.PrePersist;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.PrePersist;
+import java.util.Objects;
 
 /**
  * @author hon_him

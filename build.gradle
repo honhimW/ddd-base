@@ -1,5 +1,5 @@
 plugins {
-    id 'org.springframework.boot' version "2.6.3"
+    id 'org.springframework.boot' version "2.7.0"
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
     id 'java'
     id 'java-library'
@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.yfway.base'
-version = '0.0.5-SNAPSHOT'
+version = '0.0.6-SNAPSHOT'
 sourceCompatibility = '17'
 
 tasks.withType(JavaCompile) {
@@ -22,8 +22,8 @@ configurations {
 }
 
 ext {
-    set('springCloudVersion', "2021.0.1")
-    set('springBootVersion', "2.6.3")
+    set('springCloudVersion', "2021.0.3")
+    set('springBootVersion', "2.7.0")
 }
 
 repositories {
