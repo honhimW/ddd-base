@@ -17,9 +17,14 @@ spring:
       naming:
         implicit-strategy: com.yfway.base.ddd.jpa.strategy.YfImplicitStrategy
         physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
-
+  output:
+    ansi:
+      enabled: always
 
 server:
   http2:
     enabled: true
 
+logging:
+  level:
+    org.hibernate.sql: debug

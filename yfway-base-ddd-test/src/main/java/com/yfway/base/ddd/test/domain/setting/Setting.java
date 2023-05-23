@@ -9,11 +9,10 @@ import com.yfway.base.ddd.test.domain.setting.event.SettingLDeleteEvent;
 import com.yfway.base.ddd.test.domain.setting.event.SettingSelectEvent;
 import com.yfway.base.ddd.test.domain.setting.event.SettingUpdateEvent;
 import java.util.function.Function;
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+
+import com.yfway.base.ddd.test.domain.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,6 +47,25 @@ public class Setting extends AbstractLogicDeleteAR<Setting, SettingPK> {
     @Column(nullable = false)
     @NotNull
     private String value;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(
+        name = "user_ref_id",
+        referencedColumnName = "id",
+        foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
+    private User user;
+
+    public Setting(String description, String value) {
+        this.description = description;
+        this.value = value;
+    }
+
+    public Setting(String description, String value, User user) {
+        this.description = description;
+        this.value = value;
+        this.user = user;
+    }
 
     @Override
     public Function<DaoAction, ? extends DomainEvent<Setting, SettingPK>> eventBuilder() {

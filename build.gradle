@@ -7,10 +7,10 @@ plugins {
 }
 
 group = 'com.yfway.base'
-version = '0.0.6-SNAPSHOT'
+version = '0.0.7-SNAPSHOT'
 sourceCompatibility = '17'
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding('UTF-8')
 }
 
@@ -54,9 +54,10 @@ subprojects {
     }
 
     dependencies {
-        implementation('com.yfway.base:yfway-base-utils:1.5.2-SNAPSHOT') {
+        implementation('com.yfway.base:yfway-base-utils:2.0.1-PURE-SNAPSHOT') {
             exclude group: 'io.springfox', module: 'springfox-boot-starter'
         }
+        compileOnly 'org.springframework.data:spring-data-commons'
         compileOnly 'org.projectlombok:lombok'
         compileOnly('org.mapstruct:mapstruct:1.5.3.Final')
         compileOnly('org.mapstruct:mapstruct-jdk8:1.5.3.Final')
@@ -130,4 +131,11 @@ bootJar {
 
 jar {
     enabled(true)
+}
+
+tasks.register('onekeyDeploy') {
+    def common = tasks.findByPath(':yfway-base-ddd-common:publishLibraryPublicationToYfway-nexusRepository')
+    def jpa = tasks.findByPath(':yfway-base-ddd-jpa:publishLibraryPublicationToYfway-nexusRepository')
+    def starter = tasks.findByPath(':yfway-base-ddd-starter:publishLibraryPublicationToYfway-nexusRepository')
+    dependsOn common, jpa, starter
 }

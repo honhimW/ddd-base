@@ -1,6 +1,7 @@
 package com.yfway.base.ddd.common;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,5 +36,16 @@ public class PageInfoVO<T> implements Serializable {
     private Integer navigateLastPage;
     private List<T> list;
     private Long total;
+
+    public static <T> PageInfoVO<T> empty() {
+        PageInfoVO<T> pageInfo = new PageInfoVO<>();
+        pageInfo.setPageNum(0);
+        pageInfo.setPageSize(0);
+        pageInfo.setSize(0);
+        pageInfo.setPages(0);
+        pageInfo.setTotal(0L);
+        pageInfo.setList(Collections.emptyList());
+        return pageInfo;
+    }
 
 }

@@ -2,6 +2,7 @@ package com.yfway.base.ddd.test;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.bus.BusAutoConfiguration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -11,9 +12,9 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
  * @since 2022-10-25
  */
 @EnableWebMvc
-@EnableJpaRepositories
+@EnableJpaRepositories(repositoryBaseClass = SpecColumnRepository.class)
 @SpringBootApplication(exclude = {
-
+    BusAutoConfiguration.class,
 })
 @EnableJpaAuditing
 public class TestApp {

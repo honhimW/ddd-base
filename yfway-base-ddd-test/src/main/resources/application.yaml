@@ -19,6 +19,9 @@ spring:
       naming:
         implicit-strategy: com.yfway.base.ddd.jpa.strategy.YfImplicitStrategy
         physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+  output:
+    ansi:
+      enabled: always
 #  cloud:
 #    stream:
 #      default-binder: kafka
@@ -33,3 +36,6 @@ server:
   port: 8080
   compression:
     enabled: true
+logging:
+  level:
+    org.hibernate: debug

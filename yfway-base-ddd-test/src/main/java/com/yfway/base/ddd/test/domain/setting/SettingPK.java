@@ -1,10 +1,8 @@
 package com.yfway.base.ddd.test.domain.setting;
 
 import java.io.Serializable;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
+import lombok.*;
 import lombok.experimental.Accessors;
 
 /**
@@ -15,7 +13,7 @@ import lombok.experimental.Accessors;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Accessors
+@ToString
 public class SettingPK implements Serializable {
 
     private String userId;
