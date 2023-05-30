@@ -17,10 +17,8 @@ import org.springframework.util.ObjectUtils;
 import javax.annotation.Nonnull;
 import javax.persistence.criteria.*;
 import javax.persistence.criteria.CriteriaBuilder.In;
-import javax.persistence.metamodel.Attribute;
+import javax.persistence.metamodel.*;
 import javax.persistence.metamodel.Attribute.PersistentAttributeType;
-import javax.persistence.metamodel.ManagedType;
-import javax.persistence.metamodel.SingularAttribute;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -121,6 +119,26 @@ public class IExampleSpecification<T> implements Specification<T> {
                                           ManagedType<?> type, PathNode currentNode) {
         List<Predicate> predicates = new ArrayList<>();
         Predicate predicate = null;
+
+        for (PluralAttribute<?, ?, ?> attribute : type.getPluralAttributes()) {
+            String name = attribute.getName();
+            String currentPath = StringUtils.isBlank(path) ? name : path + "." + name;
+            Type<?> elementType = attribute.getElementType();
+            if (isAssociation(attribute)) {
+                Object attributeValue = Optional.ofNullable(groups.get(currentPath))
+                    .map(conditionColumns -> conditionColumns.get(0))
+                    .map(ConditionColumn::getValue)
+                    .orElse(null);
+                PathNode node = currentNode.add(name, attributeValue);
+                if (node.spansCycle()) {
+                    throw new InvalidDataAccessApiUsageException(
+                        String.format("Path '%s' must not span a cyclic property reference!%n%s", currentPath, node));
+                }
+                Join<Object, Object> join = ((From<?, ?>) root).join(name);
+                predicates.addAll(getPredicates(currentPath, groups, cb, join, (ManagedType<?>) elementType, node));
+            }
+        }
+
         for (SingularAttribute<?, ?> attribute : type.getSingularAttributes()) {
             String name = attribute.getName();
             String currentPath = StringUtils.isBlank(path) ? name : path + "." + name;

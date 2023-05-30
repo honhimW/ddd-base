@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.yfway.base'
-version = '0.0.7-SNAPSHOT'
+version = '0.1.0-SNAPSHOT'
 sourceCompatibility = '17'
 
 tasks.withType(JavaCompile).configureEach {
