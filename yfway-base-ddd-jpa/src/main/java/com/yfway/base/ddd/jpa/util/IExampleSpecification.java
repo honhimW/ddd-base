@@ -120,9 +120,13 @@ public class IExampleSpecification<T> implements Specification<T> {
         List<Predicate> predicates = new ArrayList<>();
         Predicate predicate = null;
 
+        Set<String> paths = groups.keySet();
         for (PluralAttribute<?, ?, ?> attribute : type.getPluralAttributes()) {
             String name = attribute.getName();
             String currentPath = StringUtils.isBlank(path) ? name : path + "." + name;
+            if (paths.stream().noneMatch(p -> p.startsWith(currentPath))) {
+                continue;
+            }
             Type<?> elementType = attribute.getElementType();
             if (isAssociation(attribute)) {
                 Object attributeValue = Optional.ofNullable(groups.get(currentPath))
