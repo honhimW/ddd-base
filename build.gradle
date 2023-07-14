@@ -21,11 +21,6 @@ configurations {
 
 }
 
-ext {
-    set('springCloudVersion', "2021.0.3")
-    set('springBootVersion', "2.7.0")
-}
-
 repositories {
     mavenLocal()
     mavenCentral()
