@@ -1,4 +1,4 @@
-package com.yfway.base.ddd.jpa.domain.mapper;
+package com.yfway.base.ddd.common;
 
 import java.sql.Timestamp;
 import java.time.Instant;

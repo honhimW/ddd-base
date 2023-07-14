@@ -20,6 +20,7 @@ public class RemoteDomainEvent extends RemoteApplicationEvent {
         this.principal = event;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getPrincipal() {
         return (T) principal;
     }

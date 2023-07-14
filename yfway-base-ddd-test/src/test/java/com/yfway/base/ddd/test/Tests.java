@@ -9,13 +9,9 @@ import com.yfway.base.ddd.test.domain.user.User;
 import com.yfway.base.ddd.test.domain.user.UserStatus;
 import com.yfway.base.ddd.test.domain.user.repository.UserRepository;
 import com.yfway.base.ddd.test.domain.user.service.UserServiceImpl;
-import com.yfway.base.utils.YfDateTimeUtils;
-import com.yfway.base.utils.YfJsonUtils;
-import com.yfway.base.utils.YfRandomUtils;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import com.yfway.base.utils.DateTimeUtils;
+import com.yfway.base.utils.JsonUtils;
+import com.yfway.base.utils.RandomUtils;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -29,8 +25,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * @author hon_him
@@ -64,8 +63,8 @@ public class Tests {
         for (int i = 10; i < 100; i++) {
             User entity = new User();
             entity.setId(String.valueOf(i));
-            entity.setPhoneNumber(YfRandomUtils.randomId(11, YfRandomUtils.NUMBER_CHARS));
-            entity.setName(YfRandomUtils.randomId(10));
+            entity.setPhoneNumber(RandomUtils.randomId(11, RandomUtils.NUMBER_CHARS));
+            entity.setName(RandomUtils.randomId(10));
             entity.setPassword(Password.of("123"));
             entity.setStatus(ThreadLocalRandom.current().nextBoolean() ? UserStatus.NORMAL : UserStatus.SICK);
             entity.setTime(LocalDateTime.now().plusSeconds(ThreadLocalRandom.current().nextInt(-100000, 100000)));
@@ -118,7 +117,7 @@ public class Tests {
     void page() {
         Page<User> page = userRepository.findByNameLike("%o%",
             PageRequest.of(0, 10, Sort.by(List.of(Order.desc("phoneNumber")))));
-        page.forEach(user -> log.info(YfJsonUtils.toJson(user)));
+        page.forEach(user -> log.info(JsonUtils.toJson(user)));
     }
 
     @Test
@@ -132,7 +131,7 @@ public class Tests {
         ConditionColumn e1 = ConditionColumn.of("time", current, MatchingType.LE);
         iPageRequest.setConditions(List.of(e, e1));
         Page<User> paging = PageUtils.paging(userRepository, iPageRequest);
-        LocalDateTime localDateTime = YfDateTimeUtils.parseLocalDateTime(current, "yyyy-MM-dd HH:mm:ss");
+        LocalDateTime localDateTime = DateTimeUtils.parseLocalDateTime(current, "yyyy-MM-dd HH:mm:ss");
         Assert.state(paging.stream().map(User::getTime).allMatch(localDateTime1 -> localDateTime1.isBefore(localDateTime)), "条件异常");
         Assert.state(paging.stream().allMatch(user -> user.getStatus() == UserStatus.SICK), "条件异常");
     }

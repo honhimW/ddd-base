@@ -1,7 +1,6 @@
 package com.yfway.base.ddd.test.domain.user.mapper;
 
-import com.yfway.base.ddd.jpa.domain.mapper.TypeMapping;
-import com.yfway.base.ddd.test.domain.user.User;
+import com.yfway.base.ddd.common.TypeMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

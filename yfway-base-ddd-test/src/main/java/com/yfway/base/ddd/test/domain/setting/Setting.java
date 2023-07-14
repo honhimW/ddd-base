@@ -9,8 +9,8 @@ import com.yfway.base.ddd.test.domain.setting.event.SettingLDeleteEvent;
 import com.yfway.base.ddd.test.domain.setting.event.SettingSelectEvent;
 import com.yfway.base.ddd.test.domain.setting.event.SettingUpdateEvent;
 import java.util.function.Function;
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import com.yfway.base.ddd.test.domain.user.User;
 import lombok.AllArgsConstructor;

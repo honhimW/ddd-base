@@ -1,6 +1,6 @@
+import java.util.concurrent.TimeUnit
+
 plugins {
-    id 'org.springframework.boot' version "2.7.0"
-    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
     id 'java'
     id 'java-library'
     id 'maven-publish'
@@ -37,8 +37,6 @@ repositories {
 }
 
 subprojects {
-    apply plugin: 'org.springframework.boot'
-    apply plugin: 'io.spring.dependency-management'
     apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
@@ -54,34 +52,38 @@ subprojects {
     }
 
     dependencies {
-        implementation('com.yfway.base:yfway-base-utils:2.0.1-PURE-SNAPSHOT') {
-            exclude group: 'io.springfox', module: 'springfox-boot-starter'
+        implementation platform('com.yfway.base:yfway-base-bom:3.0.0-SNAPSHOT')
+        annotationProcessor platform('com.yfway.base:yfway-base-bom:3.0.0-SNAPSHOT')
+        testAnnotationProcessor platform('com.yfway.base:yfway-base-bom:3.0.0-SNAPSHOT')
+
+        constraints {
+            add('compileOnly', 'org.springdoc:springdoc-openapi-common:1.7.0')
         }
+
+        implementation 'com.yfway.base:yfway-base-utils:3.0.0-PURE-SNAPSHOT'
         compileOnly 'org.springframework.data:spring-data-commons'
         compileOnly 'org.projectlombok:lombok'
-        compileOnly('org.mapstruct:mapstruct:1.5.3.Final')
-        compileOnly('org.mapstruct:mapstruct-jdk8:1.5.3.Final')
+        compileOnly 'org.mapstruct:mapstruct'
 
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
         annotationProcessor 'org.projectlombok:lombok'
-        annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
-        annotationProcessor('org.mapstruct:mapstruct-processor:1.5.3.Final')
-        annotationProcessor('org.mapstruct:mapstruct-jdk8:1.5.3.Final')
+        annotationProcessor 'org.projectlombok:lombok-mapstruct-binding'
+        annotationProcessor 'org.mapstruct:mapstruct'
+        annotationProcessor 'org.mapstruct:mapstruct-processor'
+        annotationProcessor 'org.mapstruct:mapstruct-jdk8'
+
+        testAnnotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok-mapstruct-binding'
+        testAnnotationProcessor 'org.mapstruct:mapstruct'
+        testAnnotationProcessor 'org.mapstruct:mapstruct-processor'
+        testAnnotationProcessor 'org.mapstruct:mapstruct-jdk8'
     }
 
     // 全局排除 org.springframework.boot:spring-boot-starter-logging
     configurations.configureEach {
         it.exclude(group: 'org.springframework.boot', module: 'spring-boot-starter-logging')
-    }
-
-    dependencyManagement {
-        imports {
-            mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-        }
-    }
-
-    bootJar {
-        enabled(false)
+        resolutionStrategy.cacheChangingModulesFor 0, TimeUnit.SECONDS
     }
 
     jar {
@@ -123,10 +125,6 @@ subprojects {
     tasks.named('test') {
         useJUnitPlatform()
     }
-}
-
-bootJar {
-    enabled(false)
 }
 
 jar {

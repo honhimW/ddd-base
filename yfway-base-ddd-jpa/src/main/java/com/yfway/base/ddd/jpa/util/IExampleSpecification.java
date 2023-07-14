@@ -14,11 +14,11 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ObjectUtils;
 
-import javax.annotation.Nonnull;
-import javax.persistence.criteria.*;
-import javax.persistence.criteria.CriteriaBuilder.In;
-import javax.persistence.metamodel.*;
-import javax.persistence.metamodel.Attribute.PersistentAttributeType;
+import jakarta.annotation.Nonnull;
+import jakarta.persistence.criteria.*;
+import jakarta.persistence.criteria.CriteriaBuilder.In;
+import jakarta.persistence.metamodel.*;
+import jakarta.persistence.metamodel.Attribute.PersistentAttributeType;
 import java.util.*;
 import java.util.stream.Collectors;
 

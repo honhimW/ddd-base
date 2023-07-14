@@ -13,6 +13,7 @@ import org.springframework.util.Assert;
  * @since 2022-10-26
  */
 
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public abstract class AbstractAR<A extends AbstractAR<A>> extends Model<A> {
 
     private transient final List<Object> domainEvents = new ArrayList<>();

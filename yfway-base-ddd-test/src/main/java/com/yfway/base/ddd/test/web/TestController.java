@@ -3,8 +3,8 @@ package com.yfway.base.ddd.test.web;
 import com.yfway.base.ddd.test.domain.user.User;
 import com.yfway.base.ddd.test.domain.user.repository.UserRepository;
 import com.yfway.base.ddd.test.domain.user.service.UserServiceImpl;
-import com.yfway.base.utils.YfJsonUtils;
-import javax.persistence.EntityManager;
+import com.yfway.base.utils.JsonUtils;
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,14 +30,14 @@ public class TestController {
         entity.setName("honhim");
         entity.setPhoneNumber("12324");
         userRepository.saveAndFlush(entity);
-        return YfJsonUtils.toJson(entity);
+        return JsonUtils.toJson(entity);
     }
 
     @RequestMapping("/update")
     public String update() {
         userRepository.update("1", user -> user.setName(user.getName().toUpperCase()));
         User entity = userRepository.findById("1").get();
-        return YfJsonUtils.toJson(entity);
+        return JsonUtils.toJson(entity);
     }
 
     @Autowired

@@ -4,7 +4,7 @@ import com.yfway.base.ddd.jpa.domain.AbstractAuditAR;
 import com.yfway.base.ddd.jpa.domain.ext.Auditor;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.PrePersist;
+import jakarta.persistence.PrePersist;
 import java.util.Objects;
 
 /**

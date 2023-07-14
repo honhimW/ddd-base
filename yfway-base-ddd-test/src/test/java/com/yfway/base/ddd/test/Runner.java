@@ -1,6 +1,6 @@
 package com.yfway.base.ddd.test;
 
-import com.yfway.base.utils.YfJsonUtils;
+import com.yfway.base.utils.JsonUtils;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -26,9 +26,9 @@ public class Runner {
         log.info("instant: {}", Instant.now());
         Map<String, Instant> instantMap = Map.of("instant", Instant.now());
         Map<String, LocalDateTime> ldtMap = Map.of("ldt", LocalDateTime.now());
-        log.info("instant json: {}", YfJsonUtils.toJson(instantMap));
+        log.info("instant json: {}", JsonUtils.toJson(instantMap));
         log.info("date: {}", new Date(l));
-        log.info("localdatetime json: {}", YfJsonUtils.toJson(ldtMap));
+        log.info("localdatetime json: {}", JsonUtils.toJson(ldtMap));
         log.info("localdatetime json: {}", LocalDateTime.now().toInstant(ZoneOffset.ofHours(0)));
     }
 

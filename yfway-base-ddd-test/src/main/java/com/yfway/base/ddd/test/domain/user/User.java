@@ -4,25 +4,14 @@ import com.yfway.base.ddd.jpa.domain.AbstractLogicDeleteAR;
 import com.yfway.base.ddd.jpa.domain.event.DomainEvent;
 import com.yfway.base.ddd.jpa.model.DaoAction;
 import com.yfway.base.ddd.test.domain.user.event.UserEvent;
-import com.yfway.base.utils.YfJsonUtils;
+import com.yfway.base.utils.JsonUtils;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import lombok.experimental.Accessors;
+
 import java.time.LocalDateTime;
 import java.util.function.Function;
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-import javax.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.Accessors;
-import org.hibernate.annotations.Where;
 
 /**
  * @author hon_him
@@ -70,7 +59,7 @@ public class User extends AbstractLogicDeleteAR<User, String> {
 
     @Override
     public Function<DaoAction, ? extends DomainEvent<User, String>> eventBuilder() {
-        return action -> new UserEvent(action).entity(YfJsonUtils.fromJson(YfJsonUtils.toJson(this), this.getClass()));
+        return action -> new UserEvent(action).entity(JsonUtils.fromJson(JsonUtils.toJson(this), this.getClass()));
     }
 
 }

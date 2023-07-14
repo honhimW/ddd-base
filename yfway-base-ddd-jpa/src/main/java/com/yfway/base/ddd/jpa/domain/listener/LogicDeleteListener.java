@@ -4,7 +4,7 @@ import com.yfway.base.ddd.jpa.domain.DomainEntity;
 import com.yfway.base.ddd.jpa.domain.ext.LogicDelete;
 import com.yfway.base.ddd.jpa.model.DaoAction;
 import java.util.Optional;
-import javax.persistence.PostUpdate;
+import jakarta.persistence.PostUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;

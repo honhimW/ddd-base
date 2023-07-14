@@ -5,15 +5,9 @@ plugins {
 
 dependencies {
     api(project(':yfway-base-ddd-common'))
-    api('com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.14.2')
-    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
-    implementation('jakarta.validation:jakarta.validation-api:2.0.2')
-}
-
-task print {
-    println parent.group
-    println project.name
-    println parent.version
+    api('org.springframework.boot:spring-boot-starter-data-jpa')
+    compileOnly('jakarta.validation:jakarta.validation-api')
+    compileOnly('org.springdoc:springdoc-openapi-common')
 }
 
 publishing {

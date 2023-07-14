@@ -2,7 +2,7 @@ package com.yfway.base.ddd.jpa.domain.event;
 
 import com.yfway.base.ddd.jpa.model.DaoAction;
 import java.io.Serializable;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;

@@ -2,8 +2,8 @@ package com.yfway.base.ddd.jpa.domain.ext;
 
 import com.yfway.base.ddd.jpa.model.Value;
 import java.time.Instant;
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Comment;
