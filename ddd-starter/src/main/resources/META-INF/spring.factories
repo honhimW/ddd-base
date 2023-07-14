@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  io.github.honhimw.ddd.data.DDDAutoConfiguration,\
+  io.github.honhimw.ddd.bus.EventBusAutoConfiguration

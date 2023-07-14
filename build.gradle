@@ -6,7 +6,7 @@ plugins {
     id 'maven-publish'
 }
 
-group = 'com.yfway.base'
+group = 'io.github.honhimw.ddd'
 version = '0.1.0-SNAPSHOT'
 sourceCompatibility = '17'
 
@@ -27,11 +27,6 @@ ext {
 }
 
 repositories {
-    maven {
-        allowInsecureProtocol true
-        name 'yfway-nexus'
-        url 'http://nexus.yfyun.gtland/yfang/repository/maven-public/'
-    }
     mavenLocal()
     mavenCentral()
 }
@@ -42,25 +37,35 @@ subprojects {
     apply plugin: 'maven-publish'
 
     repositories {
-        maven {
-            allowInsecureProtocol true
-            name 'yfway-nexus'
-            url 'http://nexus.yfyun.gtland/yfang/repository/maven-public/'
-        }
         mavenLocal()
         mavenCentral()
     }
 
     dependencies {
-        implementation platform('com.yfway.base:yfway-base-bom:3.0.0-SNAPSHOT')
-        annotationProcessor platform('com.yfway.base:yfway-base-bom:3.0.0-SNAPSHOT')
-        testAnnotationProcessor platform('com.yfway.base:yfway-base-bom:3.0.0-SNAPSHOT')
+        implementation platform('org.springframework.boot:spring-boot-dependencies:3.1.1')
+        annotationProcessor platform('org.springframework.boot:spring-boot-dependencies:3.1.1')
+        testAnnotationProcessor platform('org.springframework.boot:spring-boot-dependencies:3.1.1')
+        implementation platform('org.springframework.cloud:spring-cloud-dependencies:2022.0.3')
 
         constraints {
             add('compileOnly', 'org.springdoc:springdoc-openapi-common:1.7.0')
+            add('annotationProcessor', 'org.projectlombok:lombok:1.18.26')
+            add('compileOnly', 'org.mapstruct:mapstruct:1.5.5.Final')
+            add('annotationProcessor', 'org.projectlombok:lombok:1.18.26')
+            add('annotationProcessor', 'org.projectlombok:lombok-mapstruct-binding:0.2.0')
+            add('annotationProcessor', 'org.mapstruct:mapstruct:1.5.5.Final')
+            add('annotationProcessor', 'org.mapstruct:mapstruct-processor:1.5.5.Final')
+            add('annotationProcessor', 'org.mapstruct:mapstruct-jdk8:1.5.5.Final')
+            add('testAnnotationProcessor', 'org.projectlombok:lombok:1.18.26')
+            add('testAnnotationProcessor', 'org.projectlombok:lombok-mapstruct-binding:0.2.0')
+            add('testAnnotationProcessor', 'org.mapstruct:mapstruct:1.5.5.Final')
+            add('testAnnotationProcessor', 'org.mapstruct:mapstruct-processor:1.5.5.Final')
+            add('testAnnotationProcessor', 'org.mapstruct:mapstruct-jdk8:1.5.5.Final')
         }
 
-        implementation 'com.yfway.base:yfway-base-utils:3.0.0-PURE-SNAPSHOT'
+        api 'org.apache.commons:commons-lang3:3.12.0'
+        api 'org.apache.commons:commons-collections4:4.4'
+
         compileOnly 'org.springframework.data:spring-data-commons'
         compileOnly 'org.projectlombok:lombok'
         compileOnly 'org.mapstruct:mapstruct'
@@ -109,15 +114,15 @@ subprojects {
 //
 //        repositories {
 //            maven {
-//                name 'yfway-nexus'
+//                name 'dddnexus'
 //                allowInsecureProtocol true
 //                credentials {
 //                    username findProperty('MAVEN_USERNAME')
 //                    password findProperty('MAVEN_PASSWORD')
 //                }
 //                url = this.version.endsWith('SNAPSHOT')
-//                        ? 'http://nexus.yfyun.gtland/yfang/repository/maven-snapshots/'
-//                        : 'http://nexus.yfyun.gtland/yfang/repository/maven-releases/'
+//                        ? 'http://xxx/repository/maven-snapshots/'
+//                        : 'http://xxx/repository/maven-releases/'
 //            }
 //        }
 //    }
@@ -132,8 +137,8 @@ jar {
 }
 
 tasks.register('onekeyDeploy') {
-    def common = tasks.findByPath(':yfway-base-ddd-common:publishLibraryPublicationToYfway-nexusRepository')
-    def jpa = tasks.findByPath(':yfway-base-ddd-jpa:publishLibraryPublicationToYfway-nexusRepository')
-    def starter = tasks.findByPath(':yfway-base-ddd-starter:publishLibraryPublicationToYfway-nexusRepository')
+    def common = tasks.findByPath(':ddd-common:publishLibraryPublicationTodddnexusRepository')
+    def jpa = tasks.findByPath(':ddd-jpa:publishLibraryPublicationTodddnexusRepository')
+    def starter = tasks.findByPath(':ddd-starter:publishLibraryPublicationTodddnexusRepository')
     dependsOn common, jpa, starter
 }

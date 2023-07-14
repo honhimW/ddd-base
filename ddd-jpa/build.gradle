@@ -1,0 +1,50 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+dependencies {
+    api(project(':ddd-common'))
+    api('org.springframework.boot:spring-boot-starter-data-jpa')
+    compileOnly('jakarta.validation:jakarta.validation-api')
+    compileOnly('org.springdoc:springdoc-openapi-common')
+}
+
+publishing {
+
+    publications {
+        library(MavenPublication) {
+            groupId = parent.group
+            artifactId = project.name
+            version = parent.version
+            pom {
+                packaging 'jar'
+            }
+            from components.java
+            artifact sourcesJar
+        }
+    }
+
+    repositories {
+        maven {
+            name 'build-dir'
+            url = uri("${buildDir}/publishing-repository")
+        }
+        maven {
+            name 'dddnexus'
+            allowInsecureProtocol true
+            credentials {
+                username = findProperty('MAVEN_USERNAME')
+                password = findProperty('MAVEN_PASSWORD')
+            }
+            url = parent.version.endsWith('SNAPSHOT')
+                    ? 'http://xxx/repository/maven-snapshots/'
+                    : 'http://xxx/repository/maven-releases/'
+        }
+    }
+}
+
+jar {
+    enabled(true)
+    archiveClassifier = ''
+}
