@@ -1,13 +1,14 @@
 package com.yfway.base.ddd.jpa.util;
 
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.boot.model.naming.Identifier;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.boot.model.naming.Identifier;
 
 /**
  * @author hon_him
@@ -37,7 +38,7 @@ public class NamingUtils {
             identifiers,
             Comparator.comparing(Identifier::getCanonicalName)
         );
-        for ( Identifier columnName : identifiers ) {
+        for (Identifier columnName : identifiers) {
             sb.append("_").append(columnName);
         }
         return prefix + hashedName(sb.toString());

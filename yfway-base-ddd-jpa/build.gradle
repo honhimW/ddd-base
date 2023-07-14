@@ -34,8 +34,8 @@ publishing {
             name 'yfway-nexus'
             allowInsecureProtocol true
             credentials {
-                username findProperty('MAVEN_USERNAME')
-                password findProperty('MAVEN_PASSWORD')
+                username = findProperty('MAVEN_USERNAME')
+                password = findProperty('MAVEN_PASSWORD')
             }
             url = parent.version.endsWith('SNAPSHOT')
                     ? 'http://nexus.yfyun.gtland/yfang/repository/maven-snapshots/'
